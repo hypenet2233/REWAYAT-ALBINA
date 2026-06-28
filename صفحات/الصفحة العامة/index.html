@@ -28,37 +28,26 @@
                 extend: {
                     colors: {
                         brand: {
-                            50: '#fdf2f0',
-                            100: '#fce6e1',
-                            200: '#f9d0c5',
-                            300: '#f4b29e',
-                            400: '#ed8a6a',
-                            500: '#e26645',
-                            600: '#ce4a2e',
-                            700: '#8E2E3A',
-                            800: '#6b2330',
-                            900: '#4a1822',
                             maroon: '#8E2E3A',
-                            darkmaroon: '#6b2330',
-                            lightmaroon: '#a84552',
+                            darkmaroon: '#5a1c25',
+                            lightmaroon: '#b53d4c',
                             orange: '#F38031',
-                            darkorange: '#d6691e',
-                            lightorange: '#ffb366',
+                            darkorange: '#c56420',
+                            lightorange: '#ff9a55',
                             cream: '#FDF8F3',
                             warmgray: '#F5F0EB',
                             charcoal: '#2C2C2C',
                             dark: '#1a1a1a',
+                            50: '#fdf2f0',
+                            100: '#fce6e1',
+                            200: '#f9d0c5',
+                            700: '#8E2E3A',
+                            800: '#6b2330',
+                            900: '#4a1822',
                         }
                     },
                     fontFamily: {
                         sans: ['Tajawal', 'sans-serif'],
-                    },
-                    boxShadow: {
-                        'brand': '0 4px 20px rgba(142, 46, 58, 0.15)',
-                        'brand-lg': '0 10px 40px rgba(142, 46, 58, 0.2)',
-                        'orange': '0 4px 20px rgba(243, 128, 49, 0.15)',
-                        'soft': '0 2px 12px rgba(0, 0, 0, 0.06)',
-                        'card': '0 4px 24px rgba(0, 0, 0, 0.08)',
                     }
                 }
             }
@@ -67,14 +56,42 @@
     <style>
         body { 
             font-family: 'Tajawal', sans-serif; 
-            background-color: #FDF8F3; 
-            background-image: radial-gradient(#f4e6db 1px, transparent 1px);
-            background-size: 24px 24px;
+            background: linear-gradient(135deg, #FDF8F3 0%, #f5e6d8 50%, #f0ddd0 100%);
+            min-height: 100vh;
         }
+        
+        /* نمط خلفية زخرفي من البطاقة - خطوط مائلة */
+        .bg-pattern {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .bg-pattern::before {
+            content: '';
+            position: absolute;
+            top: -50%; right: -10%;
+            width: 600px; height: 150%;
+            background: linear-gradient(160deg, rgba(243,128,49,0.08) 0%, rgba(142,46,58,0.06) 50%, transparent 100%);
+            transform: rotate(-15deg);
+            border-radius: 100px;
+        }
+        .bg-pattern::after {
+            content: '';
+            position: absolute;
+            bottom: -20%; left: -5%;
+            width: 400px; height: 80%;
+            background: linear-gradient(200deg, rgba(142,46,58,0.05) 0%, rgba(243,128,49,0.04) 100%);
+            transform: rotate(10deg);
+            border-radius: 80px;
+        }
+        
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #F5F0EB; }
         ::-webkit-scrollbar-thumb { background: #8E2E3A; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #F38031; }
+        
         .tab-content { display: none; animation: fadeIn 0.4s ease-in-out; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -82,340 +99,462 @@
         /* تنسيق مربعات التعديل النشطة */
         .editable-text.editing {
             background-color: #ffffff;
-            border: 1px solid #F38031;
+            border: 2px solid #F38031;
             padding: 4px 8px;
             border-radius: 6px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(243,128,49,0.2);
             outline: none;
             display: block;
             width: 100%;
         }
 
-        /* تأثيرات البطاقات */
-        .card-hover {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        /* تدرج القائمة الجانبية - غامق وواضح */
+        .sidebar-gradient {
+            background: linear-gradient(180deg, #8E2E3A 0%, #6b2330 60%, #5a1c25 100%);
         }
-        .card-hover:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(142, 46, 58, 0.12);
-        }
-
-        /* تدرجات خلفية */
-        .gradient-sidebar {
-            background: linear-gradient(180deg, #8E2E3A 0%, #6b2330 100%);
-        }
-        .gradient-orange-accent {
-            background: linear-gradient(135deg, #F38031 0%, #e6691e 100%);
-        }
-        .gradient-maroon-accent {
-            background: linear-gradient(135deg, #8E2E3A 0%, #6b2330 100%);
+        
+        /* شريط علوي بتدرج خفيف */
+        .header-gradient {
+            background: linear-gradient(180deg, #ffffff 0%, #FDF8F3 100%);
+            border-bottom: 3px solid #8E2E3A;
+            box-shadow: 0 4px 20px rgba(142,46,58,0.1);
         }
 
-        /* تأثيرات الأزرار */
-        .btn-primary {
-            background: linear-gradient(135deg, #8E2E3A 0%, #a84552 100%);
+        /* بطاقات بتدرج خلفي واضح */
+        .stat-card {
+            background: linear-gradient(145deg, #ffffff 0%, #FFF9F5 100%);
+            border: 1px solid rgba(142,46,58,0.12);
             transition: all 0.3s ease;
         }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #6b2330 0%, #8E2E3A 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(142, 46, 58, 0.3);
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(142,46,58,0.15);
+            border-color: rgba(142,46,58,0.25);
+        }
+        
+        /* أيقونات داخل دوائر ملونة */
+        .icon-box {
+            width: 52px; height: 52px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px;
+        }
+        .icon-box.maroon {
+            background: linear-gradient(135deg, #8E2E3A 0%, #b53d4c 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(142,46,58,0.3);
+        }
+        .icon-box.orange {
+            background: linear-gradient(135deg, #F38031 0%, #ff9a55 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(243,128,49,0.3);
+        }
+        .icon-box.green {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(16,185,129,0.3);
+        }
+        .icon-box.blue {
+            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(59,130,246,0.3);
         }
 
-        /* شريط علوي زجاجي محسّن */
-        .glass-header {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(142, 46, 58, 0.08);
+        /* حدود جانبية ملونة كثيفة */
+        .border-accent-maroon { border-right: 5px solid #8E2E3A; }
+        .border-accent-orange { border-right: 5px solid #F38031; }
+        .border-accent-green { border-right: 5px solid #10b981; }
+        .border-accent-blue { border-right: 5px solid #3b82f6; }
+
+        /* زر نشط في القائمة */
+        .nav-active {
+            background: linear-gradient(90deg, rgba(243,128,49,0.2) 0%, rgba(243,128,49,0.05) 100%);
+            color: #ffb366 !important;
+            border-right: 4px solid #F38031 !important;
+            font-weight: 700;
         }
 
-        /* حدود برتقالية براقة */
-        .border-brand-glow {
-            border-right: 4px solid #F38031;
-            box-shadow: inset -4px 0 12px rgba(243, 128, 49, 0.1);
+        /* شارة الإشعارات */
+        .notify-badge {
+            position: relative;
         }
-
-        /* خلفية دائرية للأيقونات */
-        .icon-circle {
-            background: linear-gradient(135deg, rgba(142, 46, 58, 0.1) 0%, rgba(243, 128, 49, 0.1) 100%);
-        }
-
-        /* تأثير النبض للإشعارات */
-        @keyframes pulse-ring {
-            0% { transform: scale(0.8); opacity: 1; }
-            100% { transform: scale(2); opacity: 0; }
-        }
-        .pulse-dot::before {
+        .notify-badge::after {
             content: '';
             position: absolute;
-            top: 50%; left: 50%;
-            width: 100%; height: 100%;
-            border-radius: 50%;
+            top: 0; right: 0;
+            width: 10px; height: 10px;
             background: #F38031;
-            transform: translate(-50%, -50%);
-            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px rgba(243,128,49,0.3);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 2px rgba(243,128,49,0.3); }
+            50% { box-shadow: 0 0 0 6px rgba(243,128,49,0.1); }
+        }
+
+        /* جدول الأنشطة */
+        .activity-table {
+            background: white;
+            border: 2px solid rgba(142,46,58,0.1);
+            box-shadow: 0 4px 24px rgba(142,46,58,0.08);
+        }
+        .activity-table .table-header {
+            background: linear-gradient(90deg, #8E2E3A 0%, #b53d4c 100%);
+            color: white;
+        }
+        .activity-table th {
+            padding: 14px 16px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .activity-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(142,46,58,0.06);
+        }
+        .activity-table tr:hover {
+            background: linear-gradient(90deg, rgba(142,46,58,0.03) 0%, transparent 100%);
+        }
+
+        /* شارات الأقسام */
+        .dept-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .badge-maroon { background: #fce6e1; color: #8E2E3A; border: 1px solid #f9d0c5; }
+        .badge-orange { background: #fff3e6; color: #c56420; border: 1px solid #ffe0c2; }
+        .badge-green { background: #d1fae5; color: #047857; border: 1px solid #a7f3d0; }
+        .badge-violet { background: #ede9fe; color: #5b21b6; border: 1px solid #ddd6fe; }
+
+        /* Modal محسن */
+        .modal-overlay {
+            background: rgba(26, 26, 26, 0.7);
+            backdrop-filter: blur(4px);
+        }
+        .modal-box {
+            background: white;
+            border-top: 5px solid #8E2E3A;
+            box-shadow: 0 25px 60px rgba(142,46,58,0.2);
+        }
+        .modal-btn-primary {
+            background: linear-gradient(135deg, #8E2E3A 0%, #b53d4c 100%);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(142,46,58,0.3);
+        }
+        .modal-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(142,46,58,0.4);
+        }
+
+        /* عنوان القسم مع خط ملون */
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .section-title .line {
+            width: 6px; height: 32px;
+            background: linear-gradient(180deg, #F38031 0%, #8E2E3A 100%);
+            border-radius: 3px;
+        }
+        .section-title h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #5a1c25;
+            margin: 0;
+        }
+        .section-title p {
+            color: #8E2E3A;
+            opacity: 0.7;
+            font-size: 0.9rem;
+            margin: 4px 0 0 0;
+        }
+
+        /* الشعار في الهيدر مع إطار */
+        .logo-wrap {
+            position: relative;
+            padding: 6px 12px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(243,128,49,0.08) 0%, rgba(142,46,58,0.05) 100%);
+            border: 1px solid rgba(142,46,58,0.1);
+        }
+
+        /* بروفايل المستخدم في الشريط الجانبي */
+        .user-profile {
+            background: linear-gradient(90deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.15) 100%);
+            border-top: 1px solid rgba(255,255,255,0.15);
+        }
+        .user-avatar {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffffff 0%, #ffe4d6 100%);
+            color: #8E2E3A;
+            font-weight: 800;
+            font-size: 1.1rem;
+            display: flex; align-items: center; justify-content: center;
+            border: 3px solid #F38031;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
     </style>
 
-    <!-- مصدر البيانات الموحّد (تستخدمه لوحة القيادة لتجميع الأرقام الحقيقية) -->
+    <!-- مصدر البيانات الموحّد -->
     <script src="seed-data.js"></script>
 </head>
-<body class="text-brand-charcoal flex h-screen overflow-hidden">
+<body class="text-brand-charcoal flex h-screen overflow-hidden relative">
+
+    <!-- خلفية زخرفية -->
+    <div class="bg-pattern"></div>
 
     <!-- القائمة الجانبية -->
-    <aside id="sidebar" class="gradient-sidebar text-white w-64 flex-shrink-0 hidden md:flex flex-col transition-all duration-300 z-30 shadow-brand-lg h-full absolute md:relative">
-        <!-- زخرفة علوية -->
-        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-l from-brand-orange via-brand-lightorange to-brand-orange opacity-60"></div>
+    <aside id="sidebar" class="sidebar-gradient text-white w-64 flex-shrink-0 hidden md:flex flex-col z-30 shadow-2xl h-full absolute md:relative" style="box-shadow: 4px 0 30px rgba(90,28,37,0.4);">
+        <!-- شريط برتقالي زخرفي علوي -->
+        <div class="h-1.5 w-full bg-gradient-to-l from-brand-orange via-brand-lightorange to-brand-orange"></div>
         
-        <div class="h-20 flex items-center justify-center border-b border-white/15 px-4 relative overflow-hidden shrink-0">
-            <!-- تأثير خلفية متدرجة -->
-            <div class="absolute inset-0 opacity-10 bg-gradient-to-br from-brand-orange to-transparent"></div>
-            <h1 class="text-xl font-bold tracking-wider text-white z-10 drop-shadow-md">إدارة الشؤون الداخلية</h1>
+        <div class="h-20 flex items-center justify-center px-4 relative shrink-0" style="border-bottom: 1px solid rgba(255,255,255,0.15);">
+            <h1 class="text-xl font-bold tracking-wide text-white" style="text-shadow: 0 2px 4px rgba(0,0,0,0.3);">إدارة الشؤون الداخلية</h1>
         </div>
         
-        <div class="p-4 flex-1 overflow-y-auto">
-            <nav class="space-y-1.5">
-                <button onclick="switchTab('dashboard', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 bg-brand-orange/15 text-brand-lightorange border-r-4 border-brand-orange rounded-l-lg transition-all font-medium shadow-orange/10">
+        <div class="p-3 flex-1 overflow-y-auto">
+            <nav class="space-y-1">
+                <button onclick="switchTab('dashboard', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 nav-active rounded-lg transition-all">
                     <i class="ph ph-squares-four text-xl"></i> لوحة القيادة
                 </button>
-                <button onclick="switchTab('contracting', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 border-r-4 border-transparent rounded-l-lg transition-all font-medium">
+                <button onclick="switchTab('contracting', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/75 hover:text-white hover:bg-white/10 rounded-lg transition-all font-medium">
                     <i class="ph ph-buildings text-xl"></i> المقاولات العامة
                 </button>
-                <button onclick="switchTab('portables', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 border-r-4 border-transparent rounded-l-lg transition-all font-medium">
+                <button onclick="switchTab('portables', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/75 hover:text-white hover:bg-white/10 rounded-lg transition-all font-medium">
                     <i class="ph ph-house-line text-xl"></i> مصنع البرتبلات
                 </button>
-                <button onclick="switchTab('warehouses', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 border-r-4 border-transparent rounded-l-lg transition-all font-medium">
+                <button onclick="switchTab('warehouses', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/75 hover:text-white hover:bg-white/10 rounded-lg transition-all font-medium">
                     <i class="ph ph-warehouse text-xl"></i> المخازن والمستودعات
                 </button>
-                <button onclick="switchTab('hr', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 border-r-4 border-transparent rounded-l-lg transition-all font-medium">
+                <button onclick="switchTab('hr', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/75 hover:text-white hover:bg-white/10 rounded-lg transition-all font-medium">
                     <i class="ph ph-users text-xl"></i> شؤون الموظفين
                 </button>
-                <button onclick="switchTab('workers', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 border-r-4 border-transparent rounded-l-lg transition-all font-medium">
+                <button onclick="switchTab('workers', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/75 hover:text-white hover:bg-white/10 rounded-lg transition-all font-medium">
                     <i class="ph ph-hard-hat text-xl"></i> شؤون العمال
                 </button>
-                <button onclick="switchTab('finance', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 border-r-4 border-transparent rounded-l-lg transition-all font-medium">
+                <button onclick="switchTab('finance', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/75 hover:text-white hover:bg-white/10 rounded-lg transition-all font-medium">
                     <i class="ph ph-money text-xl"></i> الشؤون المالية
                 </button>
-                <button onclick="switchTab('it', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 border-r-4 border-transparent rounded-l-lg transition-all font-medium">
+                <button onclick="switchTab('it', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/75 hover:text-white hover:bg-white/10 rounded-lg transition-all font-medium">
                     <i class="ph ph-desktop text-xl"></i> تقنية المعلومات
                 </button>
-                <button onclick="switchTab('documents', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 border-r-4 border-transparent rounded-l-lg transition-all font-medium">
+                <button onclick="switchTab('documents', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/75 hover:text-white hover:bg-white/10 rounded-lg transition-all font-medium">
                     <i class="ph ph-files text-xl"></i> المستندات والنماذج
                 </button>
             </nav>
         </div>
         
-        <div class="p-4 border-t border-white/10 bg-black/20 shrink-0 cursor-pointer hover:bg-black/30 transition-colors relative overflow-hidden group">
-            <div class="absolute inset-0 bg-gradient-to-l from-brand-orange/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <div class="flex items-center gap-3 text-sm relative z-10">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-white to-brand-warmgray text-brand-maroon flex items-center justify-center font-bold text-lg shadow-lg border-2 border-brand-orange/30">N</div>
+        <div class="user-profile p-4 shrink-0 cursor-pointer hover:bg-black/20 transition-colors">
+            <div class="flex items-center gap-3">
+                <div class="user-avatar">N</div>
                 <div>
-                    <p class="font-bold text-white">ناصر عسيري</p>
-                    <p class="text-xs text-brand-lightorange">المدير العام</p>
+                    <p class="font-bold text-white text-sm">ناصر عسيري</p>
+                    <p class="text-xs" style="color: #ffb366;">المدير العام</p>
                 </div>
             </div>
         </div>
     </aside>
 
     <!-- المحتوى الرئيسي -->
-    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
         
         <!-- الشريط العلوي -->
-        <header class="h-20 glass-header flex items-center justify-between px-6 z-20 shadow-soft shrink-0">
+        <header class="h-20 header-gradient flex items-center justify-between px-6 z-20 shrink-0">
             <div class="flex items-center gap-4">
-                <button id="mobileMenuBtn" class="md:hidden text-brand-maroon p-2 rounded-lg hover:bg-brand-100 transition-colors">
+                <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg transition-colors" style="color: #8E2E3A; background: rgba(142,46,58,0.08);">
                     <i class="ph ph-list text-2xl"></i>
                 </button>
                 <div class="relative hidden sm:block">
-                    <i class="ph ph-magnifying-glass absolute right-3 top-1/2 transform -translate-y-1/2 text-brand-700/40"></i>
-                    <input type="text" onkeyup="if(event.key === 'Enter') showMessage('نتائج البحث عن: ' + this.value)" placeholder="بحث عام (اضغط Enter)..." class="pl-4 pr-10 py-2.5 bg-brand-warmgray border-transparent rounded-full text-sm focus:outline-none focus:bg-white focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20 w-64 transition-all shadow-soft">
+                    <i class="ph ph-magnifying-glass absolute right-3 top-1/2 transform -translate-y-1/2" style="color: #8E2E3A; opacity: 0.5;"></i>
+                    <input type="text" onkeyup="if(event.key === 'Enter') showMessage('نتائج البحث عن: ' + this.value)" placeholder="بحث عام (اضغط Enter)..." 
+                        class="pl-4 pr-10 py-2.5 rounded-full text-sm focus:outline-none w-64 transition-all"
+                        style="background: #F5F0EB; border: 2px solid transparent; color: #5a1c25;"
+                        onfocus="this.style.borderColor='#F38031'; this.style.background='white'; this.style.boxShadow='0 0 0 4px rgba(243,128,49,0.15)'"
+                        onblur="this.style.borderColor='transparent'; this.style.background='#F5F0EB'; this.style.boxShadow='none'">
                 </div>
             </div>
             
             <div class="flex items-center gap-5">
-                <button onclick="showMessage('لا توجد تنبيهات جديدة حالياً')" class="relative p-2.5 text-brand-700 hover:text-brand-maroon transition-colors bg-brand-warmgray rounded-full hover:bg-brand-100 shadow-soft">
+                <button onclick="showMessage('لا توجد تنبيهات جديدة حالياً')" class="relative p-2.5 rounded-full transition-all" style="background: #F5F0EB; color: #8E2E3A;">
                     <i class="ph ph-bell text-xl"></i>
-                    <span class="absolute top-1 right-1 w-2.5 h-2.5 bg-brand-orange rounded-full border-2 border-white pulse-dot"></span>
+                    <span class="notify-badge"></span>
                 </button>
-                <div class="h-8 w-px bg-brand-700/20"></div>
-                <!-- الشعار المستورد برابط خارجي مع دمج احترافي -->
-                <div class="relative group">
-                    <div class="absolute inset-0 bg-gradient-to-br from-brand-orange/20 to-brand-maroon/20 rounded-xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <img src="https://i.postimg.cc/sg88PV0h/5911057288288472436.jpg" alt="روايات البناء" class="h-14 object-contain mix-blend-multiply relative z-10">
+                <div class="h-8 w-px" style="background: rgba(142,46,58,0.2);"></div>
+                <div class="logo-wrap">
+                    <img src="https://i.postimg.cc/sg88PV0h/5911057288288472436.jpg" alt="روايات البناء" class="h-12 object-contain">
                 </div>
             </div>
         </header>
 
         <!-- منطقة التبويبات -->
-        <div class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 relative">
+        <div class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
             
             <!-- تبويب: لوحة القيادة -->
             <div id="dashboard" class="tab-content active">
-                <div class="flex justify-between items-end mb-6">
+                <div class="section-title">
+                    <div class="line"></div>
                     <div>
-                        <h2 class="text-2xl font-bold text-brand-maroon mb-1 flex items-center gap-2">
-                            <span class="w-1.5 h-8 bg-gradient-to-b from-brand-orange to-brand-maroon rounded-full inline-block"></span>
-                            لوحة القيادة
-                        </h2>
-                        <p class="text-brand-700/60 text-sm mr-4">مرحباً بك، ملخص سير العمليات اليومية.</p>
+                        <h2>لوحة القيادة</h2>
+                        <p>مرحباً بك، ملخص سير العمليات اليومية.</p>
                     </div>
                 </div>
 
-                <!-- البطاقات (أرقام حقيقية محسوبة من بيانات الأقسام) -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-white rounded-xl p-5 shadow-card border border-brand-100/50 border-r-4 border-r-brand-maroon flex items-center justify-between card-hover relative overflow-hidden group">
-                        <div class="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-brand-maroon/5 to-transparent rounded-br-full"></div>
-                        <div class="relative z-10">
-                            <p class="text-brand-700/60 text-sm mb-1">مشاريع نشطة</p>
-                            <h3 id="dashProjects" class="text-2xl font-bold text-brand-charcoal">—</h3>
+                <!-- البطاقات الإحصائية -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                    <div class="stat-card rounded-xl p-5 flex items-center justify-between border-accent-maroon">
+                        <div>
+                            <p style="color: #8E2E3A; opacity: 0.7; font-size: 0.85rem; margin-bottom: 6px;">مشاريع نشطة</p>
+                            <h3 id="dashProjects" class="text-2xl font-bold" style="color: #5a1c25;">—</h3>
                         </div>
-                        <div class="w-12 h-12 rounded-xl icon-circle flex items-center justify-center relative z-10">
-                            <i class="ph ph-buildings text-2xl text-brand-maroon/50"></i>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-xl p-5 shadow-card border border-brand-100/50 border-r-4 border-r-brand-orange flex items-center justify-between card-hover relative overflow-hidden group">
-                        <div class="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-brand-orange/5 to-transparent rounded-br-full"></div>
-                        <div class="relative z-10">
-                            <p class="text-brand-700/60 text-sm mb-1">برتبلات قيد التنفيذ</p>
-                            <h3 id="dashPortables" class="text-2xl font-bold text-brand-charcoal">—</h3>
-                        </div>
-                        <div class="w-12 h-12 rounded-xl icon-circle flex items-center justify-center relative z-10">
-                            <i class="ph ph-house-line text-2xl text-brand-orange/50"></i>
+                        <div class="icon-box maroon">
+                            <i class="ph ph-buildings"></i>
                         </div>
                     </div>
-                    <div class="bg-white rounded-xl p-5 shadow-card border border-brand-100/50 border-r-4 border-r-emerald-500 flex items-center justify-between card-hover relative overflow-hidden group">
-                        <div class="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-emerald-500/5 to-transparent rounded-br-full"></div>
-                        <div class="relative z-10">
-                            <p class="text-brand-700/60 text-sm mb-1">إجمالي الإيرادات</p>
-                            <h3 id="dashRevenue" class="text-2xl font-bold text-brand-charcoal">—</h3>
+                    <div class="stat-card rounded-xl p-5 flex items-center justify-between border-accent-orange">
+                        <div>
+                            <p style="color: #8E2E3A; opacity: 0.7; font-size: 0.85rem; margin-bottom: 6px;">برتبلات قيد التنفيذ</p>
+                            <h3 id="dashPortables" class="text-2xl font-bold" style="color: #5a1c25;">—</h3>
                         </div>
-                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100/50 flex items-center justify-center relative z-10">
-                            <i class="ph ph-trend-up text-2xl text-emerald-500/50"></i>
+                        <div class="icon-box orange">
+                            <i class="ph ph-house-line"></i>
                         </div>
                     </div>
-                    <div class="bg-white rounded-xl p-5 shadow-card border border-brand-100/50 border-r-4 border-r-sky-500 flex items-center justify-between card-hover relative overflow-hidden group">
-                        <div class="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-sky-500/5 to-transparent rounded-br-full"></div>
-                        <div class="relative z-10">
-                            <p class="text-brand-700/60 text-sm mb-1">إجمالي الكوادر (موظفين + عمال)</p>
-                            <h3 id="dashStaff" class="text-2xl font-bold text-brand-charcoal">—</h3>
+                    <div class="stat-card rounded-xl p-5 flex items-center justify-between border-accent-green">
+                        <div>
+                            <p style="color: #8E2E3A; opacity: 0.7; font-size: 0.85rem; margin-bottom: 6px;">إجمالي الإيرادات</p>
+                            <h3 id="dashRevenue" class="text-2xl font-bold" style="color: #5a1c25;">—</h3>
                         </div>
-                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-sky-50 to-sky-100/50 flex items-center justify-center relative z-10">
-                            <i class="ph ph-users text-2xl text-sky-500/50"></i>
+                        <div class="icon-box green">
+                            <i class="ph ph-trend-up"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card rounded-xl p-5 flex items-center justify-between border-accent-blue">
+                        <div>
+                            <p style="color: #8E2E3A; opacity: 0.7; font-size: 0.85rem; margin-bottom: 6px;">إجمالي الكوادر</p>
+                            <h3 id="dashStaff" class="text-2xl font-bold" style="color: #5a1c25;">—</h3>
+                        </div>
+                        <div class="icon-box blue">
+                            <i class="ph ph-users"></i>
                         </div>
                     </div>
                 </div>
 
-                <!-- تغذية الأنشطة الحيّة (مجمّعة فعليًا من بيانات الأقسام) -->
-                <div class="bg-white rounded-xl shadow-card border border-brand-100/50 overflow-hidden relative">
-                    <!-- زخرفة علوية -->
-                    <div class="h-1 bg-gradient-to-l from-brand-maroon via-brand-orange to-brand-maroon"></div>
-                    <div class="p-5 border-b border-brand-100/50 flex justify-between items-center bg-gradient-to-r from-brand-50/50 to-transparent">
-                        <h3 class="text-lg font-bold text-brand-charcoal flex items-center gap-2">
-                            <i class="ph ph-pulse text-brand-orange"></i> 
+                <!-- جدول الأنشطة -->
+                <div class="activity-table rounded-xl overflow-hidden">
+                    <div class="table-header p-4 flex justify-between items-center">
+                        <h3 class="font-bold text-white flex items-center gap-2">
+                            <i class="ph ph-pulse text-lg"></i> 
                             أحدث الأنشطة عبر الأقسام
                         </h3>
-                        <span class="text-xs text-brand-700/40 hidden sm:flex items-center gap-1">
+                        <span class="text-xs text-white/70 flex items-center gap-1">
                             <i class="ph ph-arrows-clockwise"></i> 
-                            تُجمَّع تلقائيًا وتتحدّث مع أي تعديل
+                            تُجمَّع تلقائيًا
                         </span>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-right text-sm">
-                            <thead class="text-brand-700/70 bg-brand-50/50 border-b border-brand-100/50">
+                            <thead style="background: #FDF8F3; color: #8E2E3A; border-bottom: 2px solid rgba(142,46,58,0.15);">
                                 <tr>
-                                    <th class="py-3 px-4 font-semibold">المرجع</th>
-                                    <th class="py-3 px-4 font-semibold">القسم</th>
-                                    <th class="py-3 px-4 font-semibold">البيان</th>
-                                    <th class="py-3 px-4 font-semibold w-28">التاريخ</th>
+                                    <th class="py-3 px-4 font-bold">المرجع</th>
+                                    <th class="py-3 px-4 font-bold">القسم</th>
+                                    <th class="py-3 px-4 font-bold">البيان</th>
+                                    <th class="py-3 px-4 font-bold w-28">التاريخ</th>
                                 </tr>
                             </thead>
-                            <tbody id="activityFeed" class="divide-y divide-brand-100/30"></tbody>
+                            <tbody id="activityFeed" class="divide-y" style="divide-color: rgba(142,46,58,0.06);"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- التبويبات المرتبطة بملفاتها الخاصة (تحميل كسول عبر iframe) -->
-            <div id="contracting" class="tab-content"><iframe data-src="contracting.html" class="w-full rounded-2xl border border-brand-100/50 bg-white shadow-card" style="height:calc(100vh - 8rem)"></iframe></div>
-            <div id="portables"   class="tab-content"><iframe data-src="portables.html"   class="w-full rounded-2xl border border-brand-100/50 bg-white shadow-card" style="height:calc(100vh - 8rem)"></iframe></div>
-            <div id="warehouses"  class="tab-content"><iframe data-src="warehouses.html"  class="w-full rounded-2xl border border-brand-100/50 bg-white shadow-card" style="height:calc(100vh - 8rem)"></iframe></div>
-            <div id="hr"          class="tab-content"><iframe data-src="hr.html"          class="w-full rounded-2xl border border-brand-100/50 bg-white shadow-card" style="height:calc(100vh - 8rem)"></iframe></div>
-            <div id="workers"     class="tab-content"><iframe data-src="workers.html"     class="w-full rounded-2xl border border-brand-100/50 bg-white shadow-card" style="height:calc(100vh - 8rem)"></iframe></div>
-            <div id="finance"     class="tab-content"><iframe data-src="finance.html"     class="w-full rounded-2xl border border-brand-100/50 bg-white shadow-card" style="height:calc(100vh - 8rem)"></iframe></div>
-            <div id="it"          class="tab-content"><iframe data-src="it.html"          class="w-full rounded-2xl border border-brand-100/50 bg-white shadow-card" style="height:calc(100vh - 8rem)"></iframe></div>
-            <div id="documents"   class="tab-content"><iframe data-src="documents.html"   class="w-full rounded-2xl border border-brand-100/50 bg-white shadow-card" style="height:calc(100vh - 8rem)"></iframe></div>
+            <!-- التبويبات الأخرى -->
+            <div id="contracting" class="tab-content"><iframe data-src="contracting.html" class="w-full rounded-2xl border-2 bg-white" style="height:calc(100vh - 8rem); border-color: rgba(142,46,58,0.12); box-shadow: 0 4px 24px rgba(142,46,58,0.08);"></iframe></div>
+            <div id="portables"   class="tab-content"><iframe data-src="portables.html"   class="w-full rounded-2xl border-2 bg-white" style="height:calc(100vh - 8rem); border-color: rgba(142,46,58,0.12); box-shadow: 0 4px 24px rgba(142,46,58,0.08);"></iframe></div>
+            <div id="warehouses"  class="tab-content"><iframe data-src="warehouses.html"  class="w-full rounded-2xl border-2 bg-white" style="height:calc(100vh - 8rem); border-color: rgba(142,46,58,0.12); box-shadow: 0 4px 24px rgba(142,46,58,0.08);"></iframe></div>
+            <div id="hr"          class="tab-content"><iframe data-src="hr.html"          class="w-full rounded-2xl border-2 bg-white" style="height:calc(100vh - 8rem); border-color: rgba(142,46,58,0.12); box-shadow: 0 4px 24px rgba(142,46,58,0.08);"></iframe></div>
+            <div id="workers"     class="tab-content"><iframe data-src="workers.html"     class="w-full rounded-2xl border-2 bg-white" style="height:calc(100vh - 8rem); border-color: rgba(142,46,58,0.12); box-shadow: 0 4px 24px rgba(142,46,58,0.08);"></iframe></div>
+            <div id="finance"     class="tab-content"><iframe data-src="finance.html"     class="w-full rounded-2xl border-2 bg-white" style="height:calc(100vh - 8rem); border-color: rgba(142,46,58,0.12); box-shadow: 0 4px 24px rgba(142,46,58,0.08);"></iframe></div>
+            <div id="it"          class="tab-content"><iframe data-src="it.html"          class="w-full rounded-2xl border-2 bg-white" style="height:calc(100vh - 8rem); border-color: rgba(142,46,58,0.12); box-shadow: 0 4px 24px rgba(142,46,58,0.08);"></iframe></div>
+            <div id="documents"   class="tab-content"><iframe data-src="documents.html"   class="w-full rounded-2xl border-2 bg-white" style="height:calc(100vh - 8rem); border-color: rgba(142,46,58,0.12); box-shadow: 0 4px 24px rgba(142,46,58,0.08);"></iframe></div>
 
         </div>
     </main>
 
-    <!-- Modal الرسائل العامة -->
-    <div id="messageModal" class="fixed inset-0 bg-brand-dark/60 z-[60] hidden flex items-center justify-center backdrop-blur-sm">
-        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4 transform scale-95 opacity-0 transition-all duration-300 border border-brand-100/50 relative overflow-hidden" id="modalContent">
-            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-l from-brand-maroon via-brand-orange to-brand-maroon"></div>
+    <!-- Modal الرسائل -->
+    <div id="messageModal" class="modal-overlay fixed inset-0 z-[60] hidden flex items-center justify-center">
+        <div class="modal-box rounded-xl p-6 max-w-sm w-full mx-4 transform scale-95 opacity-0 transition-all duration-300" id="modalContent">
             <div class="text-center">
-                <div class="w-16 h-16 bg-gradient-to-br from-brand-100 to-brand-50 rounded-full flex items-center justify-center mx-auto mb-4 text-brand-maroon shadow-brand">
+                <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style="background: linear-gradient(135deg, #fce6e1 0%, #f9d0c5 100%); color: #8E2E3A;">
                     <i class="ph ph-info text-3xl"></i>
                 </div>
-                <h3 class="text-lg font-bold text-brand-charcoal mb-2">إشعار النظام</h3>
-                <p class="text-brand-700/70 text-sm mb-6 font-medium" id="messageText"></p>
-                <button onclick="closeMessage()" class="w-full btn-primary text-white font-bold py-2.5 rounded-lg transition-colors shadow-brand">حسناً</button>
+                <h3 class="text-lg font-bold mb-2" style="color: #5a1c25;">إشعار النظام</h3>
+                <p class="text-sm mb-6 font-medium" style="color: #8E2E3A; opacity: 0.7;" id="messageText"></p>
+                <button onclick="closeMessage()" class="modal-btn-primary w-full">حسناً</button>
             </div>
         </div>
     </div>
 
     <!-- Modal تأكيد الحذف -->
-    <div id="confirmModal" class="fixed inset-0 bg-brand-dark/60 z-[70] hidden flex items-center justify-center backdrop-blur-sm">
-        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4 transform scale-95 opacity-0 transition-all duration-300 border border-red-100 relative overflow-hidden" id="confirmModalContent">
-            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-l from-red-500 via-red-400 to-red-500"></div>
+    <div id="confirmModal" class="modal-overlay fixed inset-0 z-[70] hidden flex items-center justify-center">
+        <div class="rounded-xl p-6 max-w-sm w-full mx-4 transform scale-95 opacity-0 transition-all duration-300 bg-white" style="border-top: 5px solid #ef4444; box-shadow: 0 25px 60px rgba(239,68,68,0.2);" id="confirmModalContent">
             <div class="text-center">
-                <div class="w-16 h-16 bg-gradient-to-br from-red-50 to-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 shadow-lg">
+                <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); color: #ef4444;">
                     <i class="ph ph-warning-circle text-3xl"></i>
                 </div>
-                <h3 class="text-lg font-bold text-brand-charcoal mb-2">تأكيد الحذف</h3>
-                <p class="text-brand-700/70 text-sm mb-6">هل أنت متأكد من رغبتك في حذف هذا السجل؟ لا يمكن التراجع عن هذا الإجراء وسيتم تحديث قاعدة البيانات.</p>
+                <h3 class="text-lg font-bold mb-2" style="color: #5a1c25;">تأكيد الحذف</h3>
+                <p class="text-sm mb-6" style="color: #8E2E3A; opacity: 0.7;">هل أنت متأكد من رغبتك في حذف هذا السجل؟ لا يمكن التراجع عن هذا الإجراء.</p>
                 <div class="flex gap-3">
-                    <button id="confirmDeleteBtn" class="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white font-bold py-2.5 rounded-lg hover:from-red-600 hover:to-red-700 transition-all shadow-lg shadow-red-500/20">نعم، احذف</button>
-                    <button onclick="closeConfirm()" class="flex-1 bg-brand-warmgray text-brand-700 font-bold py-2.5 rounded-lg hover:bg-brand-100 transition-colors">إلغاء</button>
+                    <button id="confirmDeleteBtn" class="flex-1 text-white font-bold py-2.5 rounded-lg transition-all" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); box-shadow: 0 4px 15px rgba(239,68,68,0.3);">نعم، احذف</button>
+                    <button onclick="closeConfirm()" class="flex-1 font-bold py-2.5 rounded-lg transition-all" style="background: #F5F0EB; color: #5a1c25;">إلغاء</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // 1. نظام التبويبات
+        // نظام التبويبات
         function switchTab(tabId, btnElement) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             const pane = document.getElementById(tabId);
             pane.classList.add('active');
 
-            // تحميل كسول لملف التبويب عند فتحه لأول مرة
             const frame = pane.querySelector('iframe[data-src]');
             if (frame && !frame.src) frame.src = frame.dataset.src;
 
-            // تحديث لوحة القيادة بالأرقام الحقيقية عند العودة إليها
             if (tabId === 'dashboard') computeDashboard();
 
             document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('bg-brand-orange/15', 'text-brand-lightorange', 'border-brand-orange', 'shadow-orange/10');
-                btn.classList.add('text-white/70', 'border-transparent', 'hover:bg-white/10');
+                btn.classList.remove('nav-active');
+                btn.classList.add('text-white/75');
             });
-            btnElement.classList.add('bg-brand-orange/15', 'text-brand-lightorange', 'border-brand-orange', 'shadow-orange/10');
-            btnElement.classList.remove('text-white/70', 'border-transparent', 'hover:bg-white/10');
+            btnElement.classList.add('nav-active');
+            btnElement.classList.remove('text-white/75');
 
             if (window.innerWidth < 768) {
                 document.getElementById('sidebar').classList.add('hidden');
             }
         }
 
-        // 2. القائمة الجانبية للجوال
         document.getElementById('mobileMenuBtn').addEventListener('click', () => {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('hidden');
             sidebar.classList.toggle('w-full');
         });
 
-        // 3. النوافذ المنبثقة (Modals)
+        // Modals
         function showMessage(msg) {
             const modal = document.getElementById('messageModal');
             const content = document.getElementById('modalContent');
@@ -430,7 +569,6 @@
             setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
-        // 4. الإدارة التفاعلية للجداول (الإجراءات)
         let rowToDelete = null;
 
         function addRow(tableId) {
@@ -449,7 +587,6 @@
             newRow.querySelector('.save-btn').classList.add('hidden');
             
             tbody.insertBefore(newRow, tbody.firstChild);
-            // تفعيل وضع التعديل فوراً للصف الجديد
             editRow(newRow.querySelector('.edit-btn'));
         }
 
@@ -478,9 +615,8 @@
             rowToDelete = btn.closest('tr');
             const tbody = rowToDelete.parentElement;
             
-            // قيد برمجي هام: منع حذف الصف الأخير
             if (tbody.querySelectorAll('tr').length <= 1) {
-                showMessage('عفواً، لا يمكن حذف آخر سجل متبقي في الجدول. الرجاء تعديله بدلاً من حذفه.');
+                showMessage('عفواً، لا يمكن حذف آخر سجل متبقي في الجدول.');
                 rowToDelete = null;
                 return;
             }
@@ -506,10 +642,6 @@
             }
         });
 
-        /* ============================================================
-           لوحة القيادة — أرقام حقيقية مجمّعة من بيانات الأقسام فعليًا
-           تقرأ تعديلات المستخدم من localStorage وإلا فمن المصدر الموحّد.
-           ============================================================ */
         function moduleData(key) {
             try { const r = localStorage.getItem(key); if (r) return JSON.parse(r); } catch (e) {}
             return (window.RB_SEED && RB_SEED[key]) ? RB_SEED[key] : [];
@@ -529,23 +661,22 @@
         }
 
         function renderActivityFeed() {
-            const badge = (t, c) => `<span class="px-2.5 py-1 rounded-full text-xs font-bold ${c} shadow-soft">${t}</span>`;
+            const badge = (t, c) => `<span class="dept-badge ${c}">${t}</span>`;
             const items = [];
-            moduleData('rb_finance').forEach(x => items.push({ d: x.date, dep: 'المالية', c: 'bg-emerald-50 text-emerald-700 border border-emerald-100', ref: x.ref, t: `${x.desc} — ${fmtNum(x.amount)} ر.س (${x.type})` }));
-            moduleData('rb_contracting').forEach(x => items.push({ d: x.due, dep: 'المقاولات', c: 'bg-brand-50 text-brand-maroon border border-brand-100', ref: x.ref, t: `${x.name} — ${x.status}` }));
-            moduleData('rb_portables').forEach(x => items.push({ d: x.due, dep: 'البرتبلات', c: 'bg-orange-50 text-brand-orange border border-orange-100', ref: x.code, t: `${x.type} (${x.size}) — ${x.stage}` }));
-            moduleData('rb_it').forEach(x => items.push({ d: x.date, dep: 'تقنية', c: 'bg-violet-50 text-violet-700 border border-violet-100', ref: x.ticket, t: `${x.asset} — ${x.status}` }));
+            moduleData('rb_finance').forEach(x => items.push({ d: x.date, dep: 'المالية', c: 'badge-green', ref: x.ref, t: `${x.desc} — ${fmtNum(x.amount)} ر.س (${x.type})` }));
+            moduleData('rb_contracting').forEach(x => items.push({ d: x.due, dep: 'المقاولات', c: 'badge-maroon', ref: x.ref, t: `${x.name} — ${x.status}` }));
+            moduleData('rb_portables').forEach(x => items.push({ d: x.due, dep: 'البرتبلات', c: 'badge-orange', ref: x.code, t: `${x.type} (${x.size}) — ${x.stage}` }));
+            moduleData('rb_it').forEach(x => items.push({ d: x.date, dep: 'تقنية', c: 'badge-violet', ref: x.ticket, t: `${x.asset} — ${x.status}` }));
             items.sort((a, b) => String(b.d || '').localeCompare(String(a.d || '')));
             const tb = document.getElementById('activityFeed');
             if (!tb) return;
-            tb.innerHTML = items.slice(0, 8).map(it => `<tr class="hover:bg-brand-50/50 transition-colors">
-                <td class="py-3 px-4 font-medium text-brand-charcoal">${it.ref || '—'}</td>
-                <td class="py-3 px-4">${badge(it.dep, it.c)}</td>
-                <td class="py-3 px-4 text-brand-700/70">${it.t}</td>
-                <td class="py-3 px-4 text-brand-700/40 text-xs whitespace-nowrap">${it.d || '—'}</td></tr>`).join('');
+            tb.innerHTML = items.slice(0, 8).map(it => `<tr>
+                <td class="font-bold" style="color: #5a1c25;">${it.ref || '—'}</td>
+                <td>${badge(it.dep, it.c)}</td>
+                <td style="color: #8E2E3A; opacity: 0.8;">${it.t}</td>
+                <td class="text-xs whitespace-nowrap" style="color: #8E2E3A; opacity: 0.5;">${it.d || '—'}</td></tr>`).join('');
         }
 
-        // تشغيل أولي عند فتح الصفحة (التبويب الافتراضي = لوحة القيادة)
         computeDashboard();
     </script>
 </body>
