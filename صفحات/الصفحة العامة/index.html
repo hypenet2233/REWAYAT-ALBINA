@@ -174,11 +174,15 @@
             font-weight: 700;
         }
 
-        /* شارة الإشعارات */
+        /* شارة الإشعارات - مخفية بشكل افتراضي */
         .notify-badge {
             position: relative;
+            display: none;
         }
-        .notify-badge::after {
+        .notify-badge.active {
+            display: block;
+        }
+        .notify-badge.active::after {
             content: '';
             position: absolute;
             top: 0; right: 0;
@@ -623,6 +627,38 @@
             sidebar.classList.toggle('w-full');
         });
 
+        // دالة التحقق من وجود تنبيهات حقيقية
+        function checkNotifications() {
+            const badge = document.querySelector('.notify-badge');
+            if (!badge) return;
+
+            // عدد العناصر التي تحتاج اهتمام (مشاريع متوقفة، بلاغات مفتوحة، مخزون منخفض، إلخ)
+            const C = moduleData('rb_contracting'), P = moduleData('rb_portables'),
+                  W = moduleData('rb_warehouses'), It = moduleData('rb_it'),
+                  H = moduleData('rb_hr'), Wk = moduleData('rb_workers');
+
+            let pending = 0;
+            // مقاولات: مشاريع متوقفة
+            pending += C.filter(x => x.status === 'متوقف').length;
+            // برتبلات: طلبات جديدة
+            pending += P.filter(x => x.stage === 'جديد').length;
+            // مخازن: أصناف منخفضة أو نفذت
+            pending += W.filter(x => x.status === 'منخفض' || x.status === 'نفذ').length;
+            // تقنية: بلاغات مفتوحة
+            pending += It.filter(x => x.status === 'مفتوح').length;
+            // موارد بشرية: إجازات
+            pending += H.filter(x => x.status === 'إجازة').length;
+            // عمال: متوقفين
+            pending += Wk.filter(x => x.status === 'متوقف').length;
+
+            if (pending > 0) {
+                badge.classList.add('active');
+                badge.title = pending + ' تنبيهات تنتبظر الاهتمام';
+            } else {
+                badge.classList.remove('active');
+            }
+        }
+
         // Modals
         function showMessage(msg) {
             const modal = document.getElementById('messageModal');
@@ -823,6 +859,7 @@
         }
 
         computeDashboard();
+        checkNotifications();
     </script>
 </body>
 </html>
