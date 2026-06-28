@@ -7,39 +7,38 @@
 <link rel="icon" href="https://i.postimg.cc/sg88PV0h/5911057288288472436.jpg" type="image/jpeg">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
-<style>body{font-family:'Tajawal',sans-serif;background:#f8fafc}::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:#8E2E3A;border-radius:4px}</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body{font-family:'Tajawal',sans-serif;background:linear-gradient(135deg,#FDF8F3 0%,#f5e6d8 100%);min-height:100vh}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:#8E2E3A;border-radius:4px}
+</style>
 </head>
-<body class="text-gray-800">
+<body class="text-[#5a1c25]">
 <div id="appRoot" class="p-4 md:p-6"></div>
 <script src="seed-data.js"></script>
 <script>
-const REV = d => AC.sum(d.filter(x => x.type === "إيراد"), "amount");
-const EXP = d => AC.sum(d.filter(x => x.type === "مصروف"), "amount");
 window.cfg = {
-  key: "rb_finance", title: "الشؤون المالية", icon: "ph-money", color: "green",
-  subtitle: "متابعة الإيرادات والمصروفات وصافي التدفق النقدي",
+  key: "rb_finance", title: "الشؤون المالية", icon: "ph-money", color: "maroon",
+  subtitle: "إدارة القيود والدفعات والإيرادات والمصروفات",
+  view: "table",
   columns: [
-    { key: "ref", label: "المرجع", type: "text" },
+    { key: "ref", label: "الرقم المرجعي", type: "text" },
     { key: "date", label: "التاريخ", type: "date" },
-    { key: "type", label: "النوع", type: "badge", options: ["إيراد", "مصروف"],
-      colors: { "إيراد": "green", "مصروف": "red" } },
     { key: "desc", label: "البيان", type: "text" },
-    { key: "dept", label: "القسم", type: "badge", options: ["المقاولات", "البرتبلات", "المخازن", "الرواتب", "تشغيلي", "أخرى"],
-      colors: { "المقاولات": "maroon", "البرتبلات": "orange", "المخازن": "amber", "الرواتب": "blue", "تشغيلي": "purple", "أخرى": "gray" } },
-    { key: "amount", label: "المبلغ", type: "money" }
+    { key: "type", label: "النوع", type: "badge", options: ["إيراد", "مصروف", "سحب"],
+      colors: { "إيراد": "green", "مصروف": "red", "سحب": "blue" } },
+    { key: "amount", label: "المبلغ (ر.س)", type: "money" },
+    { key: "party", label: "الطرف/الجهة", type: "text" },
+    { key: "attachment", label: "المرفق", type: "text" }
   ],
   seed: RB_SEED.rb_finance,
   kpis: [
-    { label: "إجمالي الإيرادات", icon: "ph-trend-up", color: "green", calc: d => AC.money(REV(d)) },
-    { label: "إجمالي المصروفات", icon: "ph-trend-down", color: "red", calc: d => AC.money(EXP(d)) },
-    { label: "الصافي", icon: "ph-scales", color: "maroon", calc: d => AC.money(REV(d) - EXP(d)) },
-    { label: "عدد الحركات", icon: "ph-receipt", color: "blue", calc: d => d.length }
-  ],
-  charts: [
-    { title: "الإيرادات مقابل المصروفات (ر.س)", type: "bar", icon: "ph-chart-bar", calc: d => ({ labels: ["إيرادات", "مصروفات"], data: [REV(d), EXP(d)] }) },
-    { title: "توزيع المصروفات حسب القسم", type: "doughnut", icon: "ph-chart-pie-slice", calc: d => AC.groupSum(d.filter(x => x.type === "مصروف"), "dept", "amount") }
+    { label: "إجمالي الإيرادات", icon: "ph-trend-up", color: "green", calc: d => AC.money(AC.sum(d.filter(x => x.type === "إيراد"), "amount")) },
+    { label: "إجمالي المصروفات", icon: "ph-trend-down", color: "red", calc: d => AC.money(AC.sum(d.filter(x => x.type === "مصروف"), "amount")) },
+    { label: "الصافي", icon: "ph-scales", color: "maroon", calc: d => AC.money(AC.sum(d.filter(x => x.type === "إيراد"), "amount") - AC.sum(d.filter(x => x.type === "مصروف"), "amount")) },
+    { label: "حركات مالية", icon: "ph-money", color: "orange", calc: d => d.length }
   ]
 };
 </script>

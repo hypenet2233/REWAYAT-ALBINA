@@ -7,38 +7,37 @@
 <link rel="icon" href="https://i.postimg.cc/sg88PV0h/5911057288288472436.jpg" type="image/jpeg">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
-<style>body{font-family:'Tajawal',sans-serif;background:#f8fafc}::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:#8E2E3A;border-radius:4px}</style>
+<style>
+body{font-family:'Tajawal',sans-serif;background:linear-gradient(135deg,#FDF8F3 0%,#f5e6d8 100%);min-height:100vh}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:#8E2E3A;border-radius:4px}
+</style>
 </head>
-<body class="text-gray-800">
+<body class="text-[#5a1c25]">
 <div id="appRoot" class="p-4 md:p-6"></div>
 <script src="seed-data.js"></script>
 <script>
 window.cfg = {
-  key: "rb_hr", title: "شؤون الموظفين", icon: "ph-users", color: "blue",
-  subtitle: "إدارة بيانات الكوادر الإدارية والرواتب والأقسام",
+  key: "rb_hr", title: "شؤون الموظفين", icon: "ph-users", color: "maroon",
+  subtitle: "الملف الوظيفي والموارد البشرية والأجور والإجازات",
+  view: "table",
   columns: [
     { key: "id", label: "الرقم الوظيفي", type: "text" },
     { key: "name", label: "الاسم", type: "text" },
-    { key: "job", label: "المسمى الوظيفي", type: "text" },
-    { key: "dept", label: "القسم", type: "badge", options: ["الإدارة", "المالية", "المشاريع", "الموارد البشرية", "تقنية المعلومات", "المبيعات"],
-      colors: { "الإدارة": "maroon", "المالية": "green", "المشاريع": "orange", "الموارد البشرية": "purple", "تقنية المعلومات": "blue", "المبيعات": "amber" } },
-    { key: "hire", label: "تاريخ التعيين", type: "date" },
-    { key: "salary", label: "الراتب", type: "money" },
-    { key: "status", label: "الحالة", type: "badge", options: ["على رأس العمل", "إجازة", "منتهي"],
-      colors: { "على رأس العمل": "green", "إجازة": "amber", "منتهي": "red" } }
+    { key: "role", label: "المنصب", type: "text" },
+    { key: "dept", label: "القسم", type: "text" },
+    { key: "salary", label: "الراتب (ر.س)", type: "money" },
+    { key: "startDate", label: "تاريخ التعيين", type: "date" },
+    { key: "status", label: "الحالة", type: "badge", options: ["نشط", "إجازة", "مستقيل"],
+      colors: { "نشط": "green", "إجازة": "blue", "مستقيل": "red" } }
   ],
   seed: RB_SEED.rb_hr,
   kpis: [
-    { label: "إجمالي الموظفين", icon: "ph-users", color: "blue", calc: d => d.length },
-    { label: "على رأس العمل", icon: "ph-user-check", color: "green", calc: d => AC.count(d, x => x.status === "على رأس العمل") },
-    { label: "إجمالي الرواتب الشهرية", icon: "ph-money", color: "maroon", calc: d => AC.money(AC.sum(d, "salary")) },
-    { label: "عدد الأقسام", icon: "ph-buildings", color: "orange", calc: d => new Set(d.map(x => x.dept)).size }
-  ],
-  charts: [
-    { title: "الموظفون حسب القسم", type: "doughnut", icon: "ph-chart-pie-slice", calc: d => AC.groupCount(d, "dept") },
-    { title: "إجمالي الرواتب حسب القسم (ر.س)", type: "bar", icon: "ph-chart-bar", calc: d => AC.groupSum(d, "dept", "salary") }
+    { label: "موظفين نشطين", icon: "ph-users", color: "maroon", calc: d => AC.count(d, x => x.status === "نشط") },
+    { label: "إجمالي الرواتب", icon: "ph-currency-circle-dollar", color: "orange", calc: d => AC.money(AC.sum(d, "salary")) },
+    { label: "متوسط الراتب", icon: "ph-chart-line-up", color: "green", calc: d => AC.money(Math.round(AC.sum(d, "salary") / Math.max(d.length, 1))) },
+    { label: "في إجازة", icon: "ph-airplane", color: "blue", calc: d => AC.count(d, x => x.status === "إجازة") }
   ]
 };
 </script>

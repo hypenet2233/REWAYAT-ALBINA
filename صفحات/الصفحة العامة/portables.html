@@ -3,43 +3,43 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>روايات البناء — مصنع البرتبلات</title>
+<title>روايات البناء — المصانع</title>
 <link rel="icon" href="https://i.postimg.cc/sg88PV0h/5911057288288472436.jpg" type="image/jpeg">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
-<style>body{font-family:'Tajawal',sans-serif;background:#f8fafc}::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:#8E2E3A;border-radius:4px}</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body{font-family:'Tajawal',sans-serif;background:linear-gradient(135deg,#FDF8F3 0%,#f5e6d8 100%);min-height:100vh}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:#8E2E3A;border-radius:4px}
+</style>
 </head>
-<body class="text-gray-800">
+<body class="text-[#5a1c25]">
 <div id="appRoot" class="p-4 md:p-6"></div>
 <script src="seed-data.js"></script>
 <script>
 window.cfg = {
-  key: "rb_portables", title: "مصنع البرتبلات", icon: "ph-house-line", color: "orange",
-  subtitle: "تتبّع وحدات التصنيع من الهيكل حتى التسليم",
+  key: "rb_portables", title: "المصانع", icon: "ph-house-line", color: "orange",
+  subtitle: "تصنيع وبيع البرتبلات ومساكن العمال وكبائن الحراسة",
   view: "cards",
   columns: [
-    { key: "code", label: "رقم الوحدة", type: "text" },
-    { key: "type", label: "النوع", type: "badge", options: ["سكني", "مكتبي", "دورة مياه", "غرفة حارس", "استراحة"],
-      colors: { "سكني": "maroon", "مكتبي": "blue", "دورة مياه": "purple", "غرفة حارس": "amber", "استراحة": "green" } },
-    { key: "client", label: "العميل", type: "text" },
-    { key: "size", label: "المقاس (م)", type: "text" },
-    { key: "stage", label: "مرحلة التصنيع", type: "badge", options: ["هيكل", "تأسيس", "عزل وتكسية", "تشطيب", "جاهز"],
-      colors: { "هيكل": "red", "تأسيس": "amber", "عزل وتكسية": "orange", "تشطيب": "blue", "جاهز": "green" } },
-    { key: "progress", label: "نسبة الإنجاز", type: "progress" },
-    { key: "due", label: "موعد التسليم", type: "date" }
+    { key: "code", label: "الكود", type: "text" },
+    { key: "type", label: "النوع", type: "badge", options: ["برتبل", "مسكن عمال", "كبينة حراسة"],
+      colors: { "برتبل": "orange", "مسكن عمال": "blue", "كبينة حراسة": "purple" } },
+    { key: "size", label: "المقاس", type: "text" },
+    { key: "qty", label: "الكمية", type: "number" },
+    { key: "unitPrice", label: "السعر الوحدة", type: "money" },
+    { key: "stage", label: "المرحلة", type: "badge", options: ["جديد", "قيد التصنيع", "جاهز", "تم البيع"],
+      colors: { "جديد": "blue", "قيد التصنيع": "orange", "جاهز": "green", "تم البيع": "purple" } },
+    { key: "due", label: "تاريخ التسليم", type: "date" }
   ],
   seed: RB_SEED.rb_portables,
   kpis: [
-    { label: "إجمالي الوحدات", icon: "ph-stack", color: "orange", calc: d => d.length },
-    { label: "قيد التصنيع", icon: "ph-gear", color: "maroon", calc: d => AC.count(d, x => x.stage !== "جاهز") },
-    { label: "جاهزة للتسليم", icon: "ph-check-circle", color: "green", calc: d => AC.count(d, x => x.stage === "جاهز") },
-    { label: "متوسط الإنجاز", icon: "ph-chart-line-up", color: "blue", calc: d => AC.avg(d, "progress") + "%" }
-  ],
-  charts: [
-    { title: "الوحدات حسب مرحلة التصنيع", type: "doughnut", icon: "ph-chart-pie-slice", calc: d => AC.groupCount(d, "stage") },
-    { title: "عدد الوحدات حسب النوع", type: "bar", icon: "ph-chart-bar", calc: d => AC.groupCount(d, "type") }
+    { label: "قيد التصنيع", icon: "ph-wrench", color: "orange", calc: d => AC.count(d, x => x.stage === "قيد التصنيع") },
+    { label: "إجمالي الطلبات", icon: "ph-stack", color: "maroon", calc: d => AC.count(d) },
+    { label: "الإيرادات المتوقعة", icon: "ph-currency-circle-dollar", color: "green", calc: d => AC.money(AC.sum(d, "qty") * AC.sum(d, "unitPrice")) },
+    { label: "جاهز للتسليم", icon: "ph-check-circle", color: "blue", calc: d => AC.count(d, x => x.stage === "جاهز") }
   ]
 };
 </script>

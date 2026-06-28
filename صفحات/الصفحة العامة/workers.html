@@ -7,38 +7,38 @@
 <link rel="icon" href="https://i.postimg.cc/sg88PV0h/5911057288288472436.jpg" type="image/jpeg">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
-<style>body{font-family:'Tajawal',sans-serif;background:#f8fafc}::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:#8E2E3A;border-radius:4px}</style>
+<style>
+body{font-family:'Tajawal',sans-serif;background:linear-gradient(135deg,#FDF8F3 0%,#f5e6d8 100%);min-height:100vh}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:#8E2E3A;border-radius:4px}
+</style>
 </head>
-<body class="text-gray-800">
+<body class="text-[#5a1c25]">
 <div id="appRoot" class="p-4 md:p-6"></div>
 <script src="seed-data.js"></script>
 <script>
 window.cfg = {
   key: "rb_workers", title: "شؤون العمال", icon: "ph-hard-hat", color: "orange",
-  subtitle: "إدارة العمالة في المواقع مع تنبيه ذكي لانتهاء الإقامات",
+  subtitle: "كشوف الحضور والأجور اليومية والمشاريع المكلفة",
+  view: "table",
   columns: [
     { key: "id", label: "الرقم", type: "text" },
     { key: "name", label: "الاسم", type: "text" },
-    { key: "nationality", label: "الجنسية", type: "text" },
-    { key: "trade", label: "المهنة", type: "badge", options: ["لحام", "نجار", "كهربائي", "عامل", "سائق", "فني عزل"],
-      colors: { "لحام": "red", "نجار": "amber", "كهربائي": "blue", "عامل": "gray", "سائق": "purple", "فني عزل": "green" } },
-    { key: "project", label: "الموقع/المشروع", type: "text" },
-    { key: "iqama", label: "انتهاء الإقامة", type: "date" },
-    { key: "status", label: "الحالة", type: "badge", options: ["نشط", "إجازة", "منتهي"],
-      colors: { "نشط": "green", "إجازة": "amber", "منتهي": "red" } }
+    { key: "trade", label: "المهنة", type: "text" },
+    { key: "project", label: "المشروع المكلف", type: "text" },
+    { key: "dailyWage", label: "الأجر اليومي (ر.س)", type: "money" },
+    { key: "daysWorked", label: "أيام العمل", type: "number" },
+    { key: "totalDue", label: "المستحق (ر.س)", type: "money" },
+    { key: "status", label: "الحالة", type: "badge", options: ["نشط", "متوقف", "مغادر"],
+      colors: { "نشط": "green", "متوقف": "orange", "مغادر": "red" } }
   ],
   seed: RB_SEED.rb_workers,
   kpis: [
-    { label: "إجمالي العمال", icon: "ph-hard-hat", color: "orange", calc: d => d.length },
-    { label: "عمال نشطون", icon: "ph-user-check", color: "green", calc: d => AC.count(d, x => x.status === "نشط") },
-    { label: "إقامات قرب الانتهاء (٦٠ يوم)", icon: "ph-warning-circle", color: "red", calc: d => AC.count(d, x => x.iqama && new Date(x.iqama).getTime() < Date.now() + 60 * 864e5) },
-    { label: "الجنسيات", icon: "ph-globe", color: "blue", calc: d => new Set(d.map(x => x.nationality)).size }
-  ],
-  charts: [
-    { title: "العمال حسب المهنة", type: "doughnut", icon: "ph-chart-pie-slice", calc: d => AC.groupCount(d, "trade") },
-    { title: "توزيع العمال حسب المشروع", type: "bar", icon: "ph-chart-bar", calc: d => AC.groupCount(d, "project") }
+    { label: "عمال نشطين", icon: "ph-hard-hat", color: "orange", calc: d => AC.count(d, x => x.status === "نشط") },
+    { label: "إجمالي الأجور", icon: "ph-currency-circle-dollar", color: "maroon", calc: d => AC.money(AC.sum(d, "totalDue")) },
+    { label: "متوسط الأجر اليومي", icon: "ph-chart-line-up", color: "green", calc: d => AC.money(Math.round(AC.sum(d, "dailyWage") / Math.max(d.length, 1))) },
+    { label: "متوقفين", icon: "ph-warning", color: "red", calc: d => AC.count(d, x => x.status === "متوقف") }
   ]
 };
 </script>
