@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>روايات البناء - نظام الإدارة الموحد</title>
+    
+    <!-- الشعار في تبويب المتصفح -->
+    <link rel="icon" href="https://i.postimg.cc/sg88PV0h/5911057288288472436.jpg" type="image/jpeg">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            maroon: '#8E2E3A',
+                            orange: '#F38031',
+                            dark: '#2d3748',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Tajawal', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Tajawal', sans-serif; background-color: #f8fafc; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #8E2E3A; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #F38031; }
+        .tab-content { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* تنسيق مربعات التعديل النشطة */
+        .editable-text.editing {
+            background-color: #ffffff;
+            border: 1px solid #F38031;
+            padding: 4px 8px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            outline: none;
+            display: block;
+            width: 100%;
+        }
+    </style>
+
+    <!-- مصدر البيانات الموحّد (تستخدمه لوحة القيادة لتجميع الأرقام الحقيقية) -->
+    <script src="seed-data.js"></script>
+</head>
+<body class="text-brand-dark flex h-screen overflow-hidden">
+
+    <!-- القائمة الجانبية -->
+    <aside id="sidebar" class="bg-brand-maroon text-white w-64 flex-shrink-0 hidden md:flex flex-col transition-all duration-300 z-30 shadow-2xl h-full absolute md:relative">
+        <div class="h-20 flex items-center justify-center border-b border-white/20 px-4 relative overflow-hidden shrink-0">
+            <h1 class="text-xl font-bold tracking-wider text-white z-10">إدارة الشؤون الداخلية</h1>
+        </div>
+        
+        <div class="p-4 flex-1 overflow-y-auto">
+            <nav class="space-y-1.5">
+                <button onclick="switchTab('dashboard', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 bg-brand-orange/20 text-brand-orange border-r-4 border-brand-orange rounded-l-lg transition-all font-medium">
+                    <i class="ph ph-squares-four text-xl"></i> لوحة القيادة
+                </button>
+                <button onclick="switchTab('contracting', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 border-r-4 border-transparent rounded-l-lg transition-all font-medium">
+                    <i class="ph ph-buildings text-xl"></i> المقاولات العامة
+                </button>
+                <button onclick="switchTab('portables', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 border-r-4 border-transparent rounded-l-lg transition-all font-medium">
+                    <i class="ph ph-house-line text-xl"></i> مصنع البرتبلات
+                </button>
+                <button onclick="switchTab('warehouses', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 border-r-4 border-transparent rounded-l-lg transition-all font-medium">
+                    <i class="ph ph-warehouse text-xl"></i> المخازن والمستودعات
+                </button>
+                <button onclick="switchTab('hr', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 border-r-4 border-transparent rounded-l-lg transition-all font-medium">
+                    <i class="ph ph-users text-xl"></i> شؤون الموظفين
+                </button>
+                <button onclick="switchTab('workers', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 border-r-4 border-transparent rounded-l-lg transition-all font-medium">
+                    <i class="ph ph-hard-hat text-xl"></i> شؤون العمال
+                </button>
+                <button onclick="switchTab('finance', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 border-r-4 border-transparent rounded-l-lg transition-all font-medium">
+                    <i class="ph ph-money text-xl"></i> الشؤون المالية
+                </button>
+                <button onclick="switchTab('it', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 border-r-4 border-transparent rounded-l-lg transition-all font-medium">
+                    <i class="ph ph-desktop text-xl"></i> تقنية المعلومات
+                </button>
+                <button onclick="switchTab('documents', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/10 border-r-4 border-transparent rounded-l-lg transition-all font-medium">
+                    <i class="ph ph-files text-xl"></i> المستندات والنماذج
+                </button>
+            </nav>
+        </div>
+        
+        <div class="p-4 border-t border-white/10 bg-black/20 shrink-0 cursor-pointer hover:bg-black/30 transition-colors" onclick="showMessage('إعدادات الملف الشخصي للمدير العام')">
+            <div class="flex items-center gap-3 text-sm">
+                <div class="w-10 h-10 rounded-full bg-white text-brand-maroon flex items-center justify-center font-bold text-lg shadow-inner">N</div>
+                <div>
+                    <p class="font-bold text-white">ناصر عسيري</p>
+                    <p class="text-xs text-brand-orange">المدير العام</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50 relative">
+        
+        <!-- الشريط العلوي -->
+        <header class="h-20 bg-white/80 backdrop-blur-md border-b border-gray-200 flex items-center justify-between px-6 z-20 shadow-sm shrink-0">
+            <div class="flex items-center gap-4">
+                <button id="mobileMenuBtn" class="md:hidden text-brand-maroon p-2 rounded-md hover:bg-gray-100 transition-colors">
+                    <i class="ph ph-list text-2xl"></i>
+                </button>
+                <div class="relative hidden sm:block">
+                    <i class="ph ph-magnifying-glass absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" onkeyup="if(event.key === 'Enter') showMessage('نتائج البحث عن: ' + this.value)" placeholder="بحث عام (اضغط Enter)..." class="pl-4 pr-10 py-2 bg-gray-100 border-transparent rounded-full text-sm focus:outline-none focus:bg-white focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20 w-64 transition-all">
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-5">
+                <button onclick="showMessage('لا توجد تنبيهات جديدة حالياً')" class="relative p-2 text-gray-500 hover:text-brand-maroon transition-colors bg-gray-50 rounded-full hover:bg-gray-100">
+                    <i class="ph ph-bell text-xl"></i>
+                    <span class="absolute top-1 right-1 w-2.5 h-2.5 bg-brand-orange rounded-full border-2 border-white"></span>
+                </button>
+                <div class="h-8 w-px bg-gray-200"></div>
+                <!-- الشعار المستورد برابط خارجي مع دمج احترافي -->
+                <img src="https://i.postimg.cc/sg88PV0h/5911057288288472436.jpg" alt="روايات البناء" class="h-14 object-contain mix-blend-multiply">
+            </div>
+        </header>
+
+        <!-- منطقة التبويبات -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 relative">
+            
+            <!-- تبويب: لوحة القيادة -->
+            <div id="dashboard" class="tab-content active">
+                <div class="flex justify-between items-end mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-brand-maroon mb-1">لوحة القيادة</h2>
+                        <p class="text-gray-500 text-sm">مرحباً بك، ملخص سير العمليات اليومية.</p>
+                    </div>
+                </div>
+
+                <!-- البطاقات (أرقام حقيقية محسوبة من بيانات الأقسام) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 border-r-4 border-r-brand-maroon flex items-center justify-between">
+                        <div><p class="text-gray-500 text-sm mb-1">مشاريع نشطة</p><h3 id="dashProjects" class="text-2xl font-bold text-gray-800">—</h3></div>
+                        <i class="ph ph-buildings text-3xl text-brand-maroon/30"></i>
+                    </div>
+                    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 border-r-4 border-r-brand-orange flex items-center justify-between">
+                        <div><p class="text-gray-500 text-sm mb-1">برتبلات قيد التنفيذ</p><h3 id="dashPortables" class="text-2xl font-bold text-gray-800">—</h3></div>
+                        <i class="ph ph-house-line text-3xl text-brand-orange/30"></i>
+                    </div>
+                    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 border-r-4 border-r-green-500 flex items-center justify-between">
+                        <div><p class="text-gray-500 text-sm mb-1">إجمالي الإيرادات</p><h3 id="dashRevenue" class="text-2xl font-bold text-gray-800">—</h3></div>
+                        <i class="ph ph-trend-up text-3xl text-green-500/30"></i>
+                    </div>
+                    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 border-r-4 border-r-blue-500 flex items-center justify-between">
+                        <div><p class="text-gray-500 text-sm mb-1">إجمالي الكوادر (موظفين + عمال)</p><h3 id="dashStaff" class="text-2xl font-bold text-gray-800">—</h3></div>
+                        <i class="ph ph-users text-3xl text-blue-500/30"></i>
+                    </div>
+                </div>
+
+                <!-- تغذية الأنشطة الحيّة (مجمّعة فعليًا من بيانات الأقسام) -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2"><i class="ph ph-pulse text-brand-orange"></i> أحدث الأنشطة عبر الأقسام</h3>
+                        <span class="text-xs text-gray-400 hidden sm:flex items-center gap-1"><i class="ph ph-arrows-clockwise"></i> تُجمَّع تلقائيًا وتتحدّث مع أي تعديل</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right text-sm">
+                            <thead class="text-gray-500 bg-white border-b border-gray-100">
+                                <tr>
+                                    <th class="py-3 px-4 font-semibold">المرجع</th>
+                                    <th class="py-3 px-4 font-semibold">القسم</th>
+                                    <th class="py-3 px-4 font-semibold">البيان</th>
+                                    <th class="py-3 px-4 font-semibold w-28">التاريخ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activityFeed" class="divide-y divide-gray-50"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- التبويبات المرتبطة بملفاتها الخاصة (تحميل كسول عبر iframe) -->
+            <div id="contracting" class="tab-content"><iframe data-src="contracting.html" class="w-full rounded-2xl border border-gray-100 bg-white shadow-sm" style="height:calc(100vh - 8rem)"></iframe></div>
+            <div id="portables"   class="tab-content"><iframe data-src="portables.html"   class="w-full rounded-2xl border border-gray-100 bg-white shadow-sm" style="height:calc(100vh - 8rem)"></iframe></div>
+            <div id="warehouses"  class="tab-content"><iframe data-src="warehouses.html"  class="w-full rounded-2xl border border-gray-100 bg-white shadow-sm" style="height:calc(100vh - 8rem)"></iframe></div>
+            <div id="hr"          class="tab-content"><iframe data-src="hr.html"          class="w-full rounded-2xl border border-gray-100 bg-white shadow-sm" style="height:calc(100vh - 8rem)"></iframe></div>
+            <div id="workers"     class="tab-content"><iframe data-src="workers.html"     class="w-full rounded-2xl border border-gray-100 bg-white shadow-sm" style="height:calc(100vh - 8rem)"></iframe></div>
+            <div id="finance"     class="tab-content"><iframe data-src="finance.html"     class="w-full rounded-2xl border border-gray-100 bg-white shadow-sm" style="height:calc(100vh - 8rem)"></iframe></div>
+            <div id="it"          class="tab-content"><iframe data-src="it.html"          class="w-full rounded-2xl border border-gray-100 bg-white shadow-sm" style="height:calc(100vh - 8rem)"></iframe></div>
+            <div id="documents"   class="tab-content"><iframe data-src="documents.html"   class="w-full rounded-2xl border border-gray-100 bg-white shadow-sm" style="height:calc(100vh - 8rem)"></iframe></div>
+
+        </div>
+    </main>
+
+    <!-- Modal الرسائل العامة -->
+    <div id="messageModal" class="fixed inset-0 bg-black/60 z-[60] hidden flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4 transform scale-95 opacity-0 transition-all duration-300" id="modalContent">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-500">
+                    <i class="ph ph-info text-3xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">إشعار النظام</h3>
+                <p class="text-gray-600 text-sm mb-6 font-medium" id="messageText"></p>
+                <button onclick="closeMessage()" class="w-full bg-brand-maroon text-white font-bold py-2 rounded-lg hover:bg-brand-maroon/90 transition-colors shadow-md">حسناً</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal تأكيد الحذف -->
+    <div id="confirmModal" class="fixed inset-0 bg-black/60 z-[70] hidden flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4 transform scale-95 opacity-0 transition-all duration-300" id="confirmModalContent">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
+                    <i class="ph ph-warning-circle text-3xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">تأكيد الحذف</h3>
+                <p class="text-gray-600 text-sm mb-6">هل أنت متأكد من رغبتك في حذف هذا السجل؟ لا يمكن التراجع عن هذا الإجراء وسيتم تحديث قاعدة البيانات.</p>
+                <div class="flex gap-3">
+                    <button id="confirmDeleteBtn" class="flex-1 bg-red-500 text-white font-bold py-2 rounded-lg hover:bg-red-600 transition-colors shadow-md">نعم، احذف</button>
+                    <button onclick="closeConfirm()" class="flex-1 bg-gray-100 text-gray-700 font-bold py-2 rounded-lg hover:bg-gray-200 transition-colors">إلغاء</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. نظام التبويبات
+        function switchTab(tabId, btnElement) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            const pane = document.getElementById(tabId);
+            pane.classList.add('active');
+
+            // تحميل كسول لملف التبويب عند فتحه لأول مرة
+            const frame = pane.querySelector('iframe[data-src]');
+            if (frame && !frame.src) frame.src = frame.dataset.src;
+
+            // تحديث لوحة القيادة بالأرقام الحقيقية عند العودة إليها
+            if (tabId === 'dashboard') computeDashboard();
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-brand-orange/20', 'text-brand-orange', 'border-brand-orange');
+                btn.classList.add('text-white/70', 'border-transparent', 'hover:bg-white/10');
+            });
+            btnElement.classList.add('bg-brand-orange/20', 'text-brand-orange', 'border-brand-orange');
+            btnElement.classList.remove('text-white/70', 'border-transparent', 'hover:bg-white/10');
+
+            if (window.innerWidth < 768) {
+                document.getElementById('sidebar').classList.add('hidden');
+            }
+        }
+
+        // 2. القائمة الجانبية للجوال
+        document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('w-full');
+        });
+
+        // 3. النوافذ المنبثقة (Modals)
+        function showMessage(msg) {
+            const modal = document.getElementById('messageModal');
+            const content = document.getElementById('modalContent');
+            document.getElementById('messageText').textContent = msg;
+            modal.classList.remove('hidden');
+            setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); }, 10);
+        }
+        function closeMessage() {
+            const modal = document.getElementById('messageModal');
+            const content = document.getElementById('modalContent');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        }
+
+        // 4. الإدارة التفاعلية للجداول (الإجراءات)
+        let rowToDelete = null;
+
+        function addRow(tableId) {
+            const tbody = document.querySelector(`#${tableId} tbody`);
+            const firstRow = tbody.querySelector('tr');
+            if(!firstRow) return;
+            
+            const newRow = firstRow.cloneNode(true);
+            newRow.querySelectorAll('.editable-text').forEach(cell => {
+                cell.textContent = "بيانات جديدة";
+                cell.contentEditable = "false";
+                cell.classList.remove('editing');
+            });
+            
+            newRow.querySelector('.edit-btn').classList.remove('hidden');
+            newRow.querySelector('.save-btn').classList.add('hidden');
+            
+            tbody.insertBefore(newRow, tbody.firstChild);
+            // تفعيل وضع التعديل فوراً للصف الجديد
+            editRow(newRow.querySelector('.edit-btn'));
+        }
+
+        function editRow(btn) {
+            const row = btn.closest('tr');
+            row.querySelectorAll('.editable-text').forEach(el => {
+                el.contentEditable = "true";
+                el.classList.add('editing');
+            });
+            btn.classList.add('hidden');
+            row.querySelector('.save-btn').classList.remove('hidden');
+        }
+
+        function saveRow(btn) {
+            const row = btn.closest('tr');
+            row.querySelectorAll('.editable-text').forEach(el => {
+                el.contentEditable = "false";
+                el.classList.remove('editing');
+            });
+            btn.classList.add('hidden');
+            row.querySelector('.edit-btn').classList.remove('hidden');
+            showMessage('تم حفظ التعديلات في قاعدة البيانات بنجاح.');
+        }
+
+        function deleteRowConfirm(btn) {
+            rowToDelete = btn.closest('tr');
+            const tbody = rowToDelete.parentElement;
+            
+            // قيد برمجي هام: منع حذف الصف الأخير
+            if (tbody.querySelectorAll('tr').length <= 1) {
+                showMessage('عفواً، لا يمكن حذف آخر سجل متبقي في الجدول. الرجاء تعديله بدلاً من حذفه.');
+                rowToDelete = null;
+                return;
+            }
+
+            const modal = document.getElementById('confirmModal');
+            const content = document.getElementById('confirmModalContent');
+            modal.classList.remove('hidden');
+            setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); }, 10);
+        }
+
+        function closeConfirm() {
+            const modal = document.getElementById('confirmModal');
+            const content = document.getElementById('confirmModalContent');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { modal.classList.add('hidden'); rowToDelete = null; }, 300);
+        }
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+            if (rowToDelete) {
+                rowToDelete.remove();
+                closeConfirm();
+                showMessage('تم حذف السجل بنجاح.');
+            }
+        });
+
+        /* ============================================================
+           لوحة القيادة — أرقام حقيقية مجمّعة من بيانات الأقسام فعليًا
+           تقرأ تعديلات المستخدم من localStorage وإلا فمن المصدر الموحّد.
+           ============================================================ */
+        function moduleData(key) {
+            try { const r = localStorage.getItem(key); if (r) return JSON.parse(r); } catch (e) {}
+            return (window.RB_SEED && RB_SEED[key]) ? RB_SEED[key] : [];
+        }
+        const fmtNum = n => Number(n || 0).toLocaleString('en-US');
+
+        function computeDashboard() {
+            const C = moduleData('rb_contracting'), P = moduleData('rb_portables'),
+                  H = moduleData('rb_hr'), Wk = moduleData('rb_workers'), F = moduleData('rb_finance');
+            const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+            set('dashProjects', C.filter(x => x.status === 'قيد التنفيذ').length);
+            set('dashPortables', P.filter(x => x.stage !== 'جاهز').length);
+            const rev = F.filter(x => x.type === 'إيراد').reduce((a, x) => a + Number(x.amount || 0), 0);
+            set('dashRevenue', fmtNum(rev) + ' ر.س');
+            set('dashStaff', H.length + Wk.length);
+            renderActivityFeed();
+        }
+
+        function renderActivityFeed() {
+            const badge = (t, c) => `<span class="px-2 py-0.5 rounded-full text-xs font-bold ${c}">${t}</span>`;
+            const items = [];
+            moduleData('rb_finance').forEach(x => items.push({ d: x.date, dep: 'المالية', c: 'bg-green-100 text-green-700', ref: x.ref, t: `${x.desc} — ${fmtNum(x.amount)} ر.س (${x.type})` }));
+            moduleData('rb_contracting').forEach(x => items.push({ d: x.due, dep: 'المقاولات', c: 'bg-[#8E2E3A]/10 text-[#8E2E3A]', ref: x.ref, t: `${x.name} — ${x.status}` }));
+            moduleData('rb_portables').forEach(x => items.push({ d: x.due, dep: 'البرتبلات', c: 'bg-orange-100 text-orange-700', ref: x.code, t: `${x.type} (${x.size}) — ${x.stage}` }));
+            moduleData('rb_it').forEach(x => items.push({ d: x.date, dep: 'تقنية', c: 'bg-violet-100 text-violet-700', ref: x.ticket, t: `${x.asset} — ${x.status}` }));
+            items.sort((a, b) => String(b.d || '').localeCompare(String(a.d || '')));
+            const tb = document.getElementById('activityFeed');
+            if (!tb) return;
+            tb.innerHTML = items.slice(0, 8).map(it => `<tr class="hover:bg-gray-50 transition-colors">
+                <td class="py-3 px-4 font-medium text-gray-800">${it.ref || '—'}</td>
+                <td class="py-3 px-4">${badge(it.dep, it.c)}</td>
+                <td class="py-3 px-4 text-gray-600">${it.t}</td>
+                <td class="py-3 px-4 text-gray-400 text-xs whitespace-nowrap">${it.d || '—'}</td></tr>`).join('');
+        }
+
+        // تشغيل أولي عند فتح الصفحة (التبويب الافتراضي = لوحة القيادة)
+        computeDashboard();
+    </script>
+</body>
+</html>

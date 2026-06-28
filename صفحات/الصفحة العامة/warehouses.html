@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>روايات البناء — المخازن والمستودعات</title>
+<link rel="icon" href="https://i.postimg.cc/sg88PV0h/5911057288288472436.jpg" type="image/jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>body{font-family:'Tajawal',sans-serif;background:#f8fafc}::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:#8E2E3A;border-radius:4px}</style>
+</head>
+<body class="text-gray-800">
+<div id="appRoot" class="p-4 md:p-6"></div>
+<script src="seed-data.js"></script>
+<script>
+window.cfg = {
+  key: "rb_warehouses", title: "المخازن والمستودعات", icon: "ph-warehouse", color: "amber",
+  subtitle: "إدارة المخزون مع تنبيه ذكي للأصناف تحت الحد الأدنى",
+  columns: [
+    { key: "code", label: "رمز الصنف", type: "text" },
+    { key: "name", label: "الصنف", type: "text" },
+    { key: "category", label: "التصنيف", type: "badge", options: ["حديد", "إسمنت", "كهرباء", "عزل", "أدوات", "سباكة"],
+      colors: { "حديد": "gray", "إسمنت": "amber", "كهرباء": "blue", "عزل": "purple", "أدوات": "maroon", "سباكة": "green" } },
+    { key: "qty", label: "الكمية", type: "number" },
+    { key: "min", label: "الحد الأدنى", type: "number" },
+    { key: "unit", label: "الوحدة", type: "text" },
+    { key: "warehouse", label: "المستودع", type: "badge", options: ["الرئيسي", "الفرعي", "الموقع"],
+      colors: { "الرئيسي": "maroon", "الفرعي": "blue", "الموقع": "orange" } }
+  ],
+  seed: RB_SEED.rb_warehouses,
+  kpis: [
+    { label: "إجمالي الأصناف", icon: "ph-package", color: "amber", calc: d => d.length },
+    { label: "أصناف تحت الحد الأدنى", icon: "ph-warning-octagon", color: "red", calc: d => AC.count(d, x => Number(x.qty) < Number(x.min)) },
+    { label: "إجمالي الكميات", icon: "ph-stack", color: "maroon", calc: d => AC.money(AC.sum(d, "qty")) },
+    { label: "عدد المستودعات", icon: "ph-warehouse", color: "blue", calc: d => new Set(d.map(x => x.warehouse)).size }
+  ],
+  charts: [
+    { title: "الكميات حسب التصنيف", type: "bar", icon: "ph-chart-bar", calc: d => AC.groupSum(d, "category", "qty") },
+    { title: "عدد الأصناف حسب المستودع", type: "doughnut", icon: "ph-chart-pie-slice", calc: d => AC.groupCount(d, "warehouse") }
+  ]
+};
+</script>
+<script src="admin-core.js"></script>
+</body>
+</html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>روايات البناء — المستندات والنماذج</title>
+<link rel="icon" href="https://i.postimg.cc/sg88PV0h/5911057288288472436.jpg" type="image/jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body{font-family:'Tajawal',sans-serif;background:#f8fafc}
+  ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:#8E2E3A;border-radius:4px}
+  .pop{animation:pop .2s ease}@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
+</style>
+</head>
+<body class="text-gray-800 p-4 md:p-6">
+<script src="seed-data.js"></script>
+
+<div class="max-w-7xl mx-auto">
+  <!-- العنوان -->
+  <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+    <div class="flex items-center gap-4">
+      <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white bg-gradient-to-br from-[#8E2E3A] to-[#b8434f] shadow-lg"><i class="ph ph-files text-3xl"></i></div>
+      <div>
+        <h1 class="text-2xl font-extrabold text-[#8E2E3A]">المستندات والنماذج</h1>
+        <p class="text-gray-500 text-sm">مركز النماذج والمستندات — أي نموذج تُعبّئه يُسجَّل فعليًا في القسم المختصّ وينعكس على تبويبه.</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <div class="relative">
+        <i class="ph ph-magnifying-glass absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        <input id="search" placeholder="بحث..." class="pr-9 pl-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm w-44 focus:outline-none focus:ring-2 focus:ring-[#F38031]/30">
+      </div>
+      <button id="btnAddCard" class="px-4 py-2.5 bg-gradient-to-l from-[#8E2E3A] to-[#b8434f] text-white rounded-xl text-sm font-bold hover:shadow-lg transition flex items-center gap-1.5"><i class="ph ph-plus-circle text-lg"></i> إضافة بطاقة</button>
+    </div>
+  </div>
+
+  <!-- شبكة البطاقات -->
+  <div id="cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></div>
+</div>
+
+<!-- نافذة: إضافة/تعديل بطاقة -->
+<div id="cardModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md pop max-h-[90vh] overflow-y-auto">
+    <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
+      <h3 id="cardModalTitle" class="font-bold text-gray-800">إضافة بطاقة</h3>
+      <button onclick="DOCS.closeCard()" class="text-gray-400 hover:text-gray-700"><i class="ph ph-x text-xl"></i></button>
+    </div>
+    <div class="p-5 space-y-3">
+      <div><label class="text-xs text-gray-500">العنوان</label><input id="c_title" class="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F38031]/25"></div>
+      <div><label class="text-xs text-gray-500">النوع</label>
+        <select id="c_type" onchange="DOCS.onTypeChange()" class="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm">
+          <option value="form">نموذج (يُسجّل في قسم)</option>
+          <option value="document">مستند/أداة (رابط ملف)</option>
+        </select>
+      </div>
+      <div id="c_moduleWrap"><label class="text-xs text-gray-500">القسم المختصّ</label>
+        <select id="c_module" class="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm"></select>
+      </div>
+      <div id="c_urlWrap" class="hidden"><label class="text-xs text-gray-500">رابط الملف/المستند</label><input id="c_url" placeholder="مثال: ../جدول-تماني-تفاعلي.html" class="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm"></div>
+      <div><label class="text-xs text-gray-500">الأيقونة (Phosphor)</label><input id="c_icon" placeholder="ph-file-text" class="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm"></div>
+      <div><label class="text-xs text-gray-500">الوصف</label><textarea id="c_desc" rows="2" class="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none"></textarea></div>
+    </div>
+    <div class="p-4 border-t border-gray-100 flex gap-2">
+      <button onclick="DOCS.saveCard()" class="flex-1 bg-[#8E2E3A] text-white font-bold py-2 rounded-lg hover:bg-[#7a2731] transition">حفظ</button>
+      <button onclick="DOCS.closeCard()" class="flex-1 bg-gray-100 text-gray-600 font-bold py-2 rounded-lg hover:bg-gray-200 transition">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة: تعبئة نموذج -->
+<div id="formModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg pop max-h-[90vh] overflow-y-auto">
+    <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gradient-to-l from-gray-50 to-white rounded-t-2xl">
+      <h3 id="formTitle" class="font-bold text-gray-800 flex items-center gap-2"></h3>
+      <button onclick="DOCS.closeForm()" class="text-gray-400 hover:text-gray-700"><i class="ph ph-x text-xl"></i></button>
+    </div>
+    <div id="formFields" class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+    <div class="p-4 border-t border-gray-100 flex gap-2 items-center">
+      <p class="text-xs text-gray-400 flex-1"><i class="ph ph-link-simple"></i> <span id="formHint"></span></p>
+      <button onclick="DOCS.submitForm()" class="bg-[#F38031] text-white font-bold px-5 py-2 rounded-lg hover:brightness-105 transition flex items-center gap-1.5"><i class="ph ph-check-circle"></i> اعتماد وتسجيل</button>
+      <button onclick="DOCS.closeForm()" class="bg-gray-100 text-gray-600 font-bold px-4 py-2 rounded-lg hover:bg-gray-200 transition">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة: عرض مستند -->
+<div id="viewer" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex-col p-3 md:p-6">
+  <div class="flex justify-between items-center mb-2 text-white">
+    <h3 id="viewerTitle" class="font-bold"></h3>
+    <div class="flex gap-2">
+      <a id="viewerOpen" target="_blank" class="bg-white/15 hover:bg-white/25 px-3 py-1.5 rounded-lg text-sm flex items-center gap-1"><i class="ph ph-arrow-square-out"></i> فتح في نافذة</a>
+      <button onclick="DOCS.closeViewer()" class="bg-white/15 hover:bg-white/25 px-3 py-1.5 rounded-lg text-sm flex items-center gap-1"><i class="ph ph-x"></i> إغلاق</button>
+    </div>
+  </div>
+  <iframe id="viewerFrame" class="flex-1 w-full rounded-xl bg-white border-0"></iframe>
+</div>
+
+<!-- تأكيد الحذف -->
+<div id="confirm" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] hidden items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full text-center pop">
+    <div class="w-14 h-14 mx-auto mb-3 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center"><i class="ph ph-trash text-2xl"></i></div>
+    <h3 class="font-bold text-gray-800 mb-1">حذف البطاقة</h3>
+    <p class="text-gray-500 text-sm mb-5">سيتم حذف هذه البطاقة من مركز النماذج.</p>
+    <div class="flex gap-2">
+      <button id="confirmYes" class="flex-1 bg-rose-500 text-white font-bold py-2 rounded-lg hover:bg-rose-600">نعم، احذف</button>
+      <button onclick="DOCS.closeConfirm()" class="flex-1 bg-gray-100 text-gray-600 font-bold py-2 rounded-lg hover:bg-gray-200">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- إشعار -->
+<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-20 opacity-0 transition-all duration-300 z-[70] px-5 py-3 rounded-xl shadow-2xl text-white font-bold text-sm flex items-center gap-2"></div>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
+const gid = () => "r" + Math.random().toString(36).slice(2, 9);
+const SCHEMA = window.RB_SCHEMA || {};
+const SEED = window.RB_SEED || {};
+const GRAD = { maroon: "from-[#8E2E3A] to-[#b8434f]", orange: "from-[#F38031] to-[#f6a661]", green: "from-emerald-500 to-emerald-400", blue: "from-blue-500 to-sky-400", purple: "from-violet-500 to-purple-400", amber: "from-amber-500 to-yellow-400" };
+const BADGE = { maroon: "bg-[#8E2E3A]/10 text-[#8E2E3A]", orange: "bg-orange-100 text-orange-700", green: "bg-emerald-100 text-emerald-700", blue: "bg-blue-100 text-blue-700", purple: "bg-violet-100 text-violet-700", amber: "bg-amber-100 text-amber-700", gray: "bg-gray-100 text-gray-600" };
+
+const DOC_KEY = "rb_documents";
+function defaultCards() {
+  return [
+    { id: gid(), type: "document", title: "الجدول الزمني التفاعلي — مشروع تماني", icon: "ph-chart-bar", color: "orange", cat: "البرتبلات/المقاولات", desc: "مخطط جانت + تحليل المسار الحرج (CPM)، قابل للكتابة والتعديل والطباعة الأفقية.", url: "../جدول-تماني-تفاعلي.html" },
+    { id: gid(), type: "form", title: "نموذج مشروع جديد", icon: "ph-buildings", module: "rb_contracting", desc: "تسجيل مشروع/عقد جديد يُضاف مباشرةً لقسم المقاولات العامة." },
+    { id: gid(), type: "form", title: "نموذج وحدة برتبل", icon: "ph-house-line", module: "rb_portables", desc: "إضافة وحدة تصنيع جديدة لقسم مصنع البرتبلات." },
+    { id: gid(), type: "form", title: "نموذج صنف مخزون", icon: "ph-package", module: "rb_warehouses", desc: "إدخال صنف جديد إلى قسم المخازن والمستودعات." },
+    { id: gid(), type: "form", title: "نموذج تعيين موظف", icon: "ph-user-plus", module: "rb_hr", desc: "تعيين موظف جديد في قسم شؤون الموظفين." },
+    { id: gid(), type: "form", title: "نموذج تسجيل عامل", icon: "ph-hard-hat", module: "rb_workers", desc: "تسجيل عامل جديد في قسم شؤون العمال." },
+    { id: gid(), type: "form", title: "سند مالي (إيراد/مصروف)", icon: "ph-receipt", module: "rb_finance", desc: "تسجيل حركة مالية تنعكس على الشؤون المالية ولوحة القيادة." },
+    { id: gid(), type: "form", title: "تذكرة دعم فني", icon: "ph-ticket", module: "rb_it", desc: "فتح تذكرة جديدة في قسم تقنية المعلومات." }
+  ];
+}
+function loadCards() { try { const r = localStorage.getItem(DOC_KEY); if (r) return JSON.parse(r); } catch (e) {} return defaultCards(); }
+function saveCards() { localStorage.setItem(DOC_KEY, JSON.stringify(CARDS)); }
+let CARDS = loadCards();
+let editingCard = null, activeForm = null, toDelete = null, search = "";
+
+/* ----- عرض البطاقات ----- */
+function catOf(card) {
+  if (card.type === "form") { const m = SCHEMA[card.module]; return m ? m.name : "—"; }
+  return card.cat || "مستند";
+}
+function colorOf(card) {
+  if (card.color) return card.color;
+  if (card.type === "form" && SCHEMA[card.module]) return SCHEMA[card.module].color;
+  return "maroon";
+}
+function renderCards() {
+  const host = $("#cards");
+  const q = search.toLowerCase();
+  const list = CARDS.filter(c => !q || (c.title + " " + catOf(c) + " " + (c.desc || "")).toLowerCase().includes(q));
+  host.innerHTML = list.map(c => {
+    const color = colorOf(c);
+    const isDoc = c.type === "document";
+    return `<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all group">
+      <div class="flex items-start justify-between mb-3">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white bg-gradient-to-br ${GRAD[color] || GRAD.maroon}"><i class="ph ${esc(c.icon) || "ph-file-text"} text-2xl"></i></div>
+        <span class="px-2.5 py-1 rounded-full text-[11px] font-bold ${BADGE[color] || BADGE.gray}">${esc(catOf(c))}</span>
+      </div>
+      <h3 class="font-bold text-gray-800 mb-1 leading-snug">${esc(c.title)}</h3>
+      <p class="text-gray-500 text-xs leading-relaxed flex-1 mb-4">${esc(c.desc || "")}</p>
+      <div class="flex items-center gap-2">
+        <button onclick="DOCS.open('${c.id}')" class="flex-1 bg-gradient-to-l ${GRAD[color] || GRAD.maroon} text-white text-sm font-bold py-2 rounded-lg hover:brightness-105 transition flex items-center justify-center gap-1.5">
+          <i class="ph ${isDoc ? "ph-eye" : "ph-pencil-line"}"></i> ${isDoc ? "فتح المستند" : "تعبئة النموذج"}
+        </button>
+        <button onclick="DOCS.editCard('${c.id}')" class="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition" title="تعديل البطاقة"><i class="ph ph-pencil-simple"></i></button>
+        <button onclick="DOCS.askDelete('${c.id}')" class="text-rose-600 hover:bg-rose-50 p-2 rounded-lg transition" title="حذف البطاقة"><i class="ph ph-trash"></i></button>
+      </div>
+    </div>`;
+  }).join("") || `<div class="col-span-full text-center py-16 text-gray-400"><i class="ph ph-folder-open text-5xl block mb-2"></i>لا توجد بطاقات مطابقة</div>`;
+}
+
+/* ----- فتح بطاقة (مستند أو نموذج) ----- */
+function openCard(id) {
+  const c = CARDS.find(x => x.id === id); if (!c) return;
+  if (c.type === "document") {
+    $("#viewerTitle").textContent = c.title;
+    $("#viewerFrame").src = c.url || "about:blank";
+    $("#viewerOpen").href = c.url || "#";
+    show("#viewer", "flex");
+  } else {
+    openForm(c);
+  }
+}
+
+/* ----- نموذج تعبئة يكتب في القسم ----- */
+function openForm(card) {
+  const m = SCHEMA[card.module]; if (!m) { toast("القسم غير معروف", "red"); return; }
+  activeForm = card;
+  $("#formTitle").innerHTML = `<i class="ph ${esc(card.icon) || "ph-note-pencil"} text-[#8E2E3A]"></i> ${esc(card.title)}`;
+  $("#formHint").textContent = `يُسجَّل في: ${m.name}`;
+  $("#formFields").innerHTML = m.columns.map(col => {
+    const base = "w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F38031]/25";
+    let input;
+    if (col.type === "select") input = `<select data-k="${col.key}" class="${base}">${col.options.map(o => `<option>${esc(o)}</option>`).join("")}</select>`;
+    else if (col.type === "date") input = `<input data-k="${col.key}" type="date" class="${base}">`;
+    else if (col.type === "number") input = `<input data-k="${col.key}" type="number" value="0" class="${base}">`;
+    else input = `<input data-k="${col.key}" type="text" class="${base}">`;
+    return `<div><label class="text-xs text-gray-500">${esc(col.label)}</label>${input}</div>`;
+  }).join("");
+  show("#formModal", "flex");
+}
+function submitForm() {
+  const card = activeForm; if (!card) return;
+  const m = SCHEMA[card.module];
+  const rec = { _id: gid() };
+  let filled = 0;
+  $("#formFields").querySelectorAll("[data-k]").forEach(inp => {
+    const col = m.columns.find(c => c.key === inp.dataset.k);
+    let v = inp.value;
+    if (col.type === "number") v = Number(v) || 0; else v = v.trim();
+    rec[inp.dataset.k] = v;
+    if (v !== "" && v !== 0) filled++;
+  });
+  if (filled === 0) { toast("الرجاء تعبئة الحقول أولًا", "red"); return; }
+  appendToModule(card.module, rec);
+  closeForm();
+  toast(`تم تسجيل السجل في «${m.name}» — سيظهر في تبويبه ولوحة القيادة`, "green");
+}
+/* الكتابة الفعلية في بيانات القسم (نفس مفتاح المحرك) */
+function appendToModule(key, rec) {
+  let arr;
+  try { const r = localStorage.getItem(key); arr = r ? JSON.parse(r) : null; } catch (e) { arr = null; }
+  if (!arr) arr = (SEED[key] || []).map(x => ({ _id: gid(), ...x }));
+  arr.unshift(rec);
+  localStorage.setItem(key, JSON.stringify(arr));
+  // إبلاغ الصفحة الرئيسية لتحديث لوحة القيادة فورًا إن كانت مفتوحة
+  try { if (window.parent && window.parent.computeDashboard) window.parent.computeDashboard(); } catch (e) {}
+}
+
+/* ----- CRUD البطاقات ----- */
+function buildModuleOptions() {
+  $("#c_module").innerHTML = Object.keys(SCHEMA).map(k => `<option value="${k}">${esc(SCHEMA[k].name)}</option>`).join("");
+}
+function onTypeChange() {
+  const t = $("#c_type").value;
+  $("#c_moduleWrap").classList.toggle("hidden", t !== "form");
+  $("#c_urlWrap").classList.toggle("hidden", t !== "document");
+}
+function addCard() {
+  editingCard = null;
+  $("#cardModalTitle").textContent = "إضافة بطاقة";
+  $("#c_title").value = ""; $("#c_type").value = "form"; $("#c_url").value = "";
+  $("#c_icon").value = ""; $("#c_desc").value = "";
+  buildModuleOptions(); onTypeChange(); show("#cardModal", "flex");
+}
+function editCard(id) {
+  const c = CARDS.find(x => x.id === id); if (!c) return;
+  editingCard = id;
+  $("#cardModalTitle").textContent = "تعديل بطاقة";
+  buildModuleOptions();
+  $("#c_title").value = c.title || ""; $("#c_type").value = c.type;
+  $("#c_module").value = c.module || Object.keys(SCHEMA)[0];
+  $("#c_url").value = c.url || ""; $("#c_icon").value = c.icon || ""; $("#c_desc").value = c.desc || "";
+  onTypeChange(); show("#cardModal", "flex");
+}
+function saveCard() {
+  const title = $("#c_title").value.trim();
+  if (!title) { toast("أدخل عنوان البطاقة", "red"); return; }
+  const type = $("#c_type").value;
+  const data = { title, type, icon: $("#c_icon").value.trim() || (type === "document" ? "ph-file-text" : "ph-note-pencil"), desc: $("#c_desc").value.trim() };
+  if (type === "form") data.module = $("#c_module").value;
+  else { data.url = $("#c_url").value.trim(); data.cat = "مستند"; data.color = "maroon"; }
+  if (editingCard) { const i = CARDS.findIndex(x => x.id === editingCard); CARDS[i] = { ...CARDS[i], ...data }; }
+  else CARDS.unshift({ id: gid(), ...data });
+  saveCards(); renderCards(); closeCard(); toast("تم حفظ البطاقة", "green");
+}
+function askDelete(id) { toDelete = id; show("#confirm", "flex"); }
+
+/* ----- أدوات النوافذ ----- */
+function show(sel, disp) { const m = $(sel); m.classList.remove("hidden"); m.classList.add(disp || "flex"); }
+function hide(sel) { const m = $(sel); m.classList.add("hidden"); m.classList.remove("flex"); }
+let toastT;
+function toast(msg, color) {
+  const t = $("#toast"); const bg = { green: "bg-emerald-500", red: "bg-rose-500", blue: "bg-blue-500" }[color] || "bg-gray-800";
+  const ic = { green: "ph-check-circle", red: "ph-warning-circle", blue: "ph-info" }[color] || "ph-info";
+  t.className = `fixed bottom-6 left-1/2 -translate-x-1/2 transition-all duration-300 z-[70] px-5 py-3 rounded-xl shadow-2xl text-white font-bold text-sm flex items-center gap-2 ${bg}`;
+  t.innerHTML = `<i class="ph ${ic} text-lg"></i> ${esc(msg)}`;
+  requestAnimationFrame(() => { t.style.transform = "translate(-50%,0)"; t.style.opacity = "1"; });
+  clearTimeout(toastT); toastT = setTimeout(() => { t.style.transform = "translate(-50%,5rem)"; t.style.opacity = "0"; }, 2800);
+}
+
+function closeCard() { hide("#cardModal"); }
+function closeForm() { hide("#formModal"); activeForm = null; }
+function closeViewer() { hide("#viewer"); $("#viewerFrame").src = "about:blank"; }
+function closeConfirm() { hide("#confirm"); toDelete = null; }
+const DOCS = { open: openCard, editCard, askDelete, saveCard, addCard, onTypeChange, submitForm, closeCard, closeForm, closeViewer, closeConfirm };
+window.DOCS = DOCS;
+
+/* ----- الربط ----- */
+$("#btnAddCard").onclick = addCard;
+let st; $("#search").oninput = e => { clearTimeout(st); st = setTimeout(() => { search = e.target.value; renderCards(); }, 120); };
+$("#confirmYes").onclick = () => { if (toDelete) { CARDS = CARDS.filter(x => x.id !== toDelete); saveCards(); renderCards(); DOCS.closeConfirm(); toast("تم حذف البطاقة", "red"); } };
+document.addEventListener("keydown", e => { if (e.key === "Escape") { ["#cardModal", "#formModal", "#viewer", "#confirm"].forEach(hide); } });
+
+renderCards();
+</script>
+</body>
+</html>
