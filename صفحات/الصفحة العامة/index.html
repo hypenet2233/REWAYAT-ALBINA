@@ -217,7 +217,75 @@
             background: linear-gradient(90deg, rgba(142,46,58,0.03) 0%, transparent 100%);
         }
 
-        /* شارات الأقسام */
+        /* شريط التقدم التفاعلي */
+        .progress-track {
+            position: relative;
+            width: 100%;
+            height: 10px;
+            background: #F5F0EB;
+            border-radius: 5px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .progress-track:hover {
+            box-shadow: 0 0 0 3px rgba(243,128,49,0.15);
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0; bottom: 0;
+            width: 20px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4));
+            border-radius: 0 5px 5px 0;
+        }
+        .progress-pct {
+            font-size: 0.75rem;
+            font-weight: 800;
+            margin-top: 3px;
+            display: inline-block;
+        }
+        .progress-low { background: linear-gradient(90deg, #ef4444, #f87171); }
+        .progress-mid { background: linear-gradient(90deg, #F38031, #ff9a55); }
+        .progress-high { background: linear-gradient(90deg, #10b981, #34d399); }
+        .progress-done { background: linear-gradient(90deg, #8E2E3A, #b53d4c); }
+
+        /* مصدر البيانات */
+        .data-source {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            background: #FDF8F3;
+            color: #8E2E3A;
+            border: 1px solid rgba(142,46,58,0.1);
+            transition: all 0.3s;
+        }
+        .data-source:hover {
+            background: #fce6e1;
+            transform: scale(1.05);
+        }
+        .data-source i {
+            font-size: 0.85rem;
+        }
+
+        /* تأثير hover على صفوف الجدول */
+        .activity-table tbody tr {
+            transition: all 0.2s ease;
+        }
+        .activity-table tbody tr:hover {
+            background: linear-gradient(90deg, rgba(142,46,58,0.04) 0%, rgba(243,128,49,0.02) 100%);
+            transform: translateX(-4px);
+        }
         .dept-badge {
             display: inline-block;
             padding: 4px 12px;
@@ -471,6 +539,7 @@
                                     <th class="py-3 px-4 font-bold">المرجع</th>
                                     <th class="py-3 px-4 font-bold">القسم</th>
                                     <th class="py-3 px-4 font-bold">البيان</th>
+                                    <th class="py-3 px-4 font-bold">نسبة الإنجاز</th>
                                     <th class="py-3 px-4 font-bold w-28">التاريخ</th>
                                 </tr>
                             </thead>
@@ -662,19 +731,95 @@
 
         function renderActivityFeed() {
             const badge = (t, c) => `<span class="dept-badge ${c}">${t}</span>`;
+            
+            // دالة حساب نسبة التقدم من واقع البيانات الفعلية
+            function getProgress(x, dept) {
+                let pct = 0, color = 'progress-low', label = 'بداية';
+                
+                if (dept === 'المقاولات') {
+                    pct = Number(x.progress || 0);
+                    if (pct === 0) { color = 'progress-low'; label = 'بداية'; }
+                    else if (pct < 50) { color = 'progress-mid'; label = 'قيد التنفيذ'; }
+                    else if (pct < 100) { color = 'progress-high'; label = 'تقدم جيد'; }
+                    else { color = 'progress-done'; label = 'مكتمل'; }
+                }
+                else if (dept === 'البرتبلات') {
+                    const stageMap = { 'جديد': 0, 'قيد التصنيع': 50, 'جاهز': 100, 'تم البيع': 100 };
+                    pct = stageMap[x.stage] || 0;
+                    if (pct === 0) { color = 'progress-low'; label = 'جديد'; }
+                    else if (pct < 100) { color = 'progress-mid'; label = 'قيد التصنيع'; }
+                    else { color = 'progress-done'; label = 'جاهز'; }
+                }
+                else if (dept === 'تقنية') {
+                    const statusMap = { 'مفتوح': 25, 'قيد العمل': 60, 'مغلق': 100 };
+                    pct = statusMap[x.status] || 0;
+                    if (pct === 25) { color = 'progress-low'; label = 'مفتوح'; }
+                    else if (pct === 60) { color = 'progress-mid'; label = 'قيد العمل'; }
+                    else { color = 'progress-done'; label = 'مغلق'; }
+                }
+                else if (dept === 'المالية') {
+                    pct = 100; // المعاملات المالية مكتملة
+                    color = x.type === 'إيراد' ? 'progress-high' : 'progress-done';
+                    label = 'تمت العملية';
+                }
+                
+                return { pct, color, label };
+            }
+            
+            // أيقونات المصادر
+            const sourceIcons = {
+                'المالية': 'ph-currency-circle-dollar',
+                'المقاولات': 'ph-buildings',
+                'البرتبلات': 'ph-house-line',
+                'تقنية': 'ph-desktop'
+            };
+
             const items = [];
-            moduleData('rb_finance').forEach(x => items.push({ d: x.date, dep: 'المالية', c: 'badge-green', ref: x.ref, t: `${x.desc} — ${fmtNum(x.amount)} ر.س (${x.type})` }));
-            moduleData('rb_contracting').forEach(x => items.push({ d: x.due, dep: 'المقاولات', c: 'badge-maroon', ref: x.ref, t: `${x.name} — ${x.status}` }));
-            moduleData('rb_portables').forEach(x => items.push({ d: x.due, dep: 'البرتبلات', c: 'badge-orange', ref: x.code, t: `${x.type} (${x.size}) — ${x.stage}` }));
-            moduleData('rb_it').forEach(x => items.push({ d: x.date, dep: 'تقنية', c: 'badge-violet', ref: x.ticket, t: `${x.asset} — ${x.status}` }));
+            moduleData('rb_finance').forEach(x => {
+                const p = getProgress(x, 'المالية');
+                items.push({ d: x.date, dep: 'المالية', c: 'badge-green', ref: x.ref, t: `${x.desc} — ${fmtNum(x.amount)} ر.س (${x.type})`, progress: p, source: 'نظام المالية' });
+            });
+            moduleData('rb_contracting').forEach(x => {
+                const p = getProgress(x, 'المقاولات');
+                items.push({ d: x.due, dep: 'المقاولات', c: 'badge-maroon', ref: x.ref, t: `${x.name} — ${x.status}`, progress: p, source: 'نظام المقاولات' });
+            });
+            moduleData('rb_portables').forEach(x => {
+                const p = getProgress(x, 'البرتبلات');
+                items.push({ d: x.due, dep: 'البرتبلات', c: 'badge-orange', ref: x.code, t: `${x.type} (${x.size}) — ${x.stage}`, progress: p, source: 'نظام البرتبلات' });
+            });
+            moduleData('rb_it').forEach(x => {
+                const p = getProgress(x, 'تقنية');
+                items.push({ d: x.date, dep: 'تقنية', c: 'badge-violet', ref: x.ticket, t: `${x.asset} — ${x.status}`, progress: p, source: 'نظام تقنية' });
+            });
             items.sort((a, b) => String(b.d || '').localeCompare(String(a.d || '')));
+            
             const tb = document.getElementById('activityFeed');
             if (!tb) return;
-            tb.innerHTML = items.slice(0, 8).map(it => `<tr>
+            
+            tb.innerHTML = items.slice(0, 8).map((it, idx) => {
+                const p = it.progress;
+                const icon = sourceIcons[it.dep] || 'ph-circle';
+                return `<tr>
                 <td class="font-bold" style="color: #5a1c25;">${it.ref || '—'}</td>
                 <td>${badge(it.dep, it.c)}</td>
                 <td style="color: #8E2E3A; opacity: 0.8;">${it.t}</td>
-                <td class="text-xs whitespace-nowrap" style="color: #8E2E3A; opacity: 0.5;">${it.d || '—'}</td></tr>`).join('');
+                <td>
+                    <div class="flex flex-col gap-1" style="min-width: 120px;">
+                        <div class="progress-track" title="${p.label} — ${p.pct}% من واقع البرنامج">
+                            <div class="progress-fill ${p.color}" style="width: 0%" data-width="${p.pct}%"></div>
+                        </div>
+                        <span class="progress-pct" style="color: ${p.color === 'progress-low' ? '#ef4444' : p.color === 'progress-mid' ? '#F38031' : p.color === 'progress-high' ? '#10b981' : '#8E2E3A'};">${p.pct}% ${p.label}</span>
+                    </div>
+                </td>
+                <td class="text-xs whitespace-nowrap" style="color: #8E2E3A; opacity: 0.5;">${it.d || '—'}</td></tr>`;
+            }).join('');
+            
+            // تشغيل animation للأشرطة بعد render
+            setTimeout(() => {
+                document.querySelectorAll('.progress-fill[data-width]').forEach((bar, i) => {
+                    setTimeout(() => { bar.style.width = bar.dataset.width; }, i * 100);
+                });
+            }, 100);
         }
 
         computeDashboard();
