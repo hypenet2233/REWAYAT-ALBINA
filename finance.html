@@ -39,6 +39,10 @@ window.cfg = {
     { label: "إجمالي المصروفات", icon: "ph-trend-down", color: "red", calc: d => AC.money(AC.sum(d.filter(x => x.type === "مصروف"), "amount")) },
     { label: "الصافي", icon: "ph-scales", color: "maroon", calc: d => AC.money(AC.sum(d.filter(x => x.type === "إيراد"), "amount") - AC.sum(d.filter(x => x.type === "مصروف"), "amount")) },
     { label: "حركات مالية", icon: "ph-money", color: "orange", calc: d => d.length }
+  ],
+  charts: [
+    { title: "الإيرادات مقابل المصروفات (ر.س)", type: "bar", icon: "ph-chart-bar", calc: d => ({ labels: ["إيرادات", "مصروفات"], data: [AC.sum(d.filter(x => x.type === "إيراد"), "amount"), AC.sum(d.filter(x => x.type === "مصروف"), "amount")] }) },
+    { title: "المصروفات حسب القسم", type: "doughnut", icon: "ph-chart-pie-slice", calc: d => AC.groupSum(d.filter(x => x.type === "مصروف"), "dept", "amount") }
   ]
 };
 </script>

@@ -40,6 +40,10 @@ window.cfg = {
     { label: "إجمالي الكميات", icon: "ph-stack", color: "orange", calc: d => AC.sum(d, "qty") },
     { label: "أصناف منخفضة", icon: "ph-warning", color: "red", calc: d => AC.count(d, x => x.status === "منخفض") },
     { label: "أصناف نفذت", icon: "ph-x-circle", color: "blue", calc: d => AC.count(d, x => x.status === "نفذ") }
+  ],
+  charts: [
+    { title: "الكميات حسب التصنيف", type: "bar", icon: "ph-chart-bar", calc: d => AC.groupSum(d, "category", "qty") },
+    { title: "عدد الأصناف حسب المستودع", type: "doughnut", icon: "ph-chart-pie-slice", calc: d => AC.groupCount(d, "location") }
   ]
 };
 </script>

@@ -15,36 +15,36 @@ window.RB_SEED = {
     { ref: "PRJ-1024", name: "توسعة مصنع الإسمنت", client: "إسمنت الجنوب", location: "جازان", value: 9700000, progress: 80, status: "قيد التنفيذ", due: "2026-11-12" }
   ],
   rb_portables: [
-    { code: "PB-2051", type: "سكني", client: "شركة نيوم", size: "6×12", stage: "تشطيب", progress: 85, due: "2026-07-15" },
-    { code: "PB-2050", type: "مكتبي", client: "أرامكو", size: "3×6", stage: "عزل وتكسية", progress: 55, due: "2026-07-22" },
-    { code: "PB-2048", type: "دورة مياه", client: "بلدية أبها", size: "2×3", stage: "جاهز", progress: 100, due: "2026-06-30" },
-    { code: "PB-2045", type: "غرفة حارس", client: "مجمع الياسمين", size: "2×2", stage: "هيكل", progress: 15, due: "2026-08-10" },
-    { code: "PB-2043", type: "استراحة", client: "عميل خاص", size: "8×15", stage: "تأسيس", progress: 35, due: "2026-08-25" },
-    { code: "PB-2040", type: "سكني", client: "وزارة الإسكان", size: "6×12", stage: "تشطيب", progress: 90, due: "2026-07-05" }
+    { code: "PB-2051", type: "برتبل", size: "6×12", qty: 4, unitPrice: 85000, stage: "قيد التصنيع", due: "2026-07-15" },
+    { code: "PB-2050", type: "مسكن عمال", size: "3×6", qty: 10, unitPrice: 32000, stage: "جاهز", due: "2026-07-22" },
+    { code: "PB-2048", type: "كبينة حراسة", size: "2×3", qty: 6, unitPrice: 12000, stage: "تم البيع", due: "2026-06-30" },
+    { code: "PB-2045", type: "برتبل", size: "8×15", qty: 2, unitPrice: 145000, stage: "جديد", due: "2026-08-10" },
+    { code: "PB-2043", type: "مسكن عمال", size: "4×8", qty: 8, unitPrice: 40000, stage: "قيد التصنيع", due: "2026-08-25" },
+    { code: "PB-2040", type: "برتبل", size: "6×12", qty: 5, unitPrice: 90000, stage: "جاهز", due: "2026-07-05" }
   ],
   rb_warehouses: [
-    { code: "IT-501", name: "حديد تسليح 16مم", category: "حديد", qty: 1200, min: 500, unit: "طن", warehouse: "الرئيسي" },
-    { code: "IT-502", name: "إسمنت مقاوم", category: "إسمنت", qty: 80, min: 150, unit: "كيس", warehouse: "الموقع" },
-    { code: "IT-503", name: "كابل نحاس 4مم", category: "كهرباء", qty: 45, min: 100, unit: "لفة", warehouse: "الفرعي" },
-    { code: "IT-504", name: "صوف صخري عازل", category: "عزل", qty: 320, min: 100, unit: "لوح", warehouse: "الرئيسي" },
-    { code: "IT-505", name: "مواسير PVC 4 إنش", category: "سباكة", qty: 60, min: 80, unit: "ماسورة", warehouse: "الموقع" },
-    { code: "IT-506", name: "دريل صناعي", category: "أدوات", qty: 18, min: 10, unit: "قطعة", warehouse: "الفرعي" }
+    { sku: "WH-501", item: "حديد تسليح 16مم", category: "حديد", qty: 1200, unit: "طن", location: "الرئيسي", minStock: 500, status: "متوفر" },
+    { sku: "WH-502", item: "إسمنت مقاوم", category: "إسمنت", qty: 80, unit: "كيس", location: "الموقع", minStock: 150, status: "منخفض" },
+    { sku: "WH-503", item: "كابل نحاس 4مم", category: "كهرباء", qty: 0, unit: "لفة", location: "الفرعي", minStock: 100, status: "نفذ" },
+    { sku: "WH-504", item: "صوف صخري عازل", category: "عزل", qty: 320, unit: "لوح", location: "الرئيسي", minStock: 100, status: "متوفر" },
+    { sku: "WH-505", item: "مواسير PVC 4 إنش", category: "سباكة", qty: 60, unit: "ماسورة", location: "الموقع", minStock: 80, status: "منخفض" },
+    { sku: "WH-506", item: "دريل صناعي", category: "أدوات", qty: 18, unit: "قطعة", location: "الفرعي", minStock: 10, status: "متوفر" }
   ],
   rb_hr: [
-    { id: "EMP-101", name: "ناصر عسيري", job: "المدير العام", dept: "الإدارة", hire: "2019-02-01", salary: 32000, status: "على رأس العمل" },
-    { id: "EMP-112", name: "سعد القحطاني", job: "مدير المشاريع", dept: "المشاريع", hire: "2020-06-15", salary: 21000, status: "على رأس العمل" },
-    { id: "EMP-118", name: "منى الزهراني", job: "محاسب أول", dept: "المالية", hire: "2021-09-01", salary: 14500, status: "إجازة" },
-    { id: "EMP-124", name: "خالد الشهري", job: "أخصائي موارد بشرية", dept: "الموارد البشرية", hire: "2022-01-20", salary: 12000, status: "على رأس العمل" },
-    { id: "EMP-130", name: "ريم العمري", job: "مهندس برمجيات", dept: "تقنية المعلومات", hire: "2023-03-10", salary: 16000, status: "على رأس العمل" },
-    { id: "EMP-133", name: "فهد الدوسري", job: "مندوب مبيعات", dept: "المبيعات", hire: "2024-05-05", salary: 9500, status: "منتهي" }
+    { id: "EMP-101", name: "ناصر عسيري", role: "المدير العام", dept: "الإدارة", salary: 32000, startDate: "2019-02-01", status: "نشط" },
+    { id: "EMP-112", name: "سعد القحطاني", role: "مدير المشاريع", dept: "المشاريع", salary: 21000, startDate: "2020-06-15", status: "نشط" },
+    { id: "EMP-118", name: "منى الزهراني", role: "محاسب أول", dept: "المالية", salary: 14500, startDate: "2021-09-01", status: "إجازة" },
+    { id: "EMP-124", name: "خالد الشهري", role: "أخصائي موارد بشرية", dept: "الموارد البشرية", salary: 12000, startDate: "2022-01-20", status: "نشط" },
+    { id: "EMP-130", name: "ريم العمري", role: "مهندس برمجيات", dept: "تقنية المعلومات", salary: 16000, startDate: "2023-03-10", status: "نشط" },
+    { id: "EMP-133", name: "فهد الدوسري", role: "مندوب مبيعات", dept: "المبيعات", salary: 9500, startDate: "2024-05-05", status: "مستقيل" }
   ],
   rb_workers: [
-    { id: "W-3012", name: "محمد رسول", nationality: "باكستاني", trade: "لحام", project: "برج العليا", iqama: "2026-08-12", status: "نشط" },
-    { id: "W-3018", name: "أنوار حسين", nationality: "بنغلاديشي", trade: "عامل", project: "مجمع نيوم", iqama: "2026-07-05", status: "نشط" },
-    { id: "W-3025", name: "راجو كومار", nationality: "هندي", trade: "كهربائي", project: "فلل الياسمين", iqama: "2027-01-22", status: "نشط" },
-    { id: "W-3031", name: "علي أحمد", nationality: "يمني", trade: "نجار", project: "مصنع البرتبلات", iqama: "2026-06-28", status: "إجازة" },
-    { id: "W-3037", name: "صابر الدين", nationality: "مصري", trade: "سائق", project: "المستودع الرئيسي", iqama: "2026-12-15", status: "نشط" },
-    { id: "W-3044", name: "كمال باشا", nationality: "سوداني", trade: "فني عزل", project: "توسعة المصنع", iqama: "2026-07-18", status: "منتهي" }
+    { id: "W-3012", name: "محمد رسول", trade: "لحام", project: "برج العليا", dailyWage: 150, daysWorked: 24, totalDue: 3600, status: "نشط" },
+    { id: "W-3018", name: "أنوار حسين", trade: "عامل", project: "مجمع نيوم", dailyWage: 90, daysWorked: 26, totalDue: 2340, status: "نشط" },
+    { id: "W-3025", name: "راجو كومار", trade: "كهربائي", project: "فلل الياسمين", dailyWage: 130, daysWorked: 22, totalDue: 2860, status: "نشط" },
+    { id: "W-3031", name: "علي أحمد", trade: "نجار", project: "مصنع البرتبلات", dailyWage: 110, daysWorked: 20, totalDue: 2200, status: "متوقف" },
+    { id: "W-3037", name: "صابر الدين", trade: "سائق", project: "المستودع الرئيسي", dailyWage: 100, daysWorked: 25, totalDue: 2500, status: "نشط" },
+    { id: "W-3044", name: "كمال باشا", trade: "فني عزل", project: "توسعة المصنع", dailyWage: 120, daysWorked: 18, totalDue: 2160, status: "مغادر" }
   ],
   rb_finance: [
     { ref: "TRX-9012", date: "2026-06-20", type: "إيراد", desc: "دفعة مشروع برج العليا", dept: "المقاولات", amount: 1200000 },
@@ -55,12 +55,12 @@ window.RB_SEED = {
     { ref: "TRX-9001", date: "2026-06-01", type: "إيراد", desc: "دفعة مقدمة مستودعات الدمام", dept: "المقاولات", amount: 800000 }
   ],
   rb_it: [
-    { ticket: "TK-7021", asset: "خادم الملفات الرئيسي", user: "الإدارة", type: "شبكة", priority: "عالية", status: "قيد المعالجة", date: "2026-06-26" },
-    { ticket: "TK-7019", asset: "طابعة المالية", user: "المالية", type: "صيانة", priority: "متوسطة", status: "مفتوحة", date: "2026-06-25" },
-    { ticket: "TK-7016", asset: "نظام إدارة المشاريع", user: "المشاريع", type: "برمجيات", priority: "عالية", status: "مفتوحة", date: "2026-06-24" },
-    { ticket: "TK-7012", asset: "أجهزة موقع نيوم", user: "المشاريع", type: "تركيب", priority: "منخفضة", status: "مغلقة", date: "2026-06-20" },
-    { ticket: "TK-7008", asset: "بريد الشركة", user: "الموارد البشرية", type: "دعم", priority: "متوسطة", status: "مغلقة", date: "2026-06-18" },
-    { ticket: "TK-7005", asset: "كاميرات المستودع", user: "المخازن", type: "صيانة", priority: "عالية", status: "قيد المعالجة", date: "2026-06-15" }
+    { ticket: "TK-7021", date: "2026-06-26", asset: "خادم الملفات الرئيسي", issue: "بطء في الشبكة", status: "قيد العمل", priority: "عالية", assigned: "م. التقنية", resolutionDays: 2 },
+    { ticket: "TK-7019", date: "2026-06-25", asset: "طابعة المالية", issue: "انحشار ورق متكرر", status: "مفتوح", priority: "متوسطة", assigned: "الدعم الفني", resolutionDays: 1 },
+    { ticket: "TK-7016", date: "2026-06-24", asset: "نظام إدارة المشاريع", issue: "خطأ في التقارير", status: "مفتوح", priority: "عالية", assigned: "م. البرمجيات", resolutionDays: 4 },
+    { ticket: "TK-7012", date: "2026-06-20", asset: "أجهزة موقع نيوم", issue: "تركيب أجهزة جديدة", status: "مغلق", priority: "منخفضة", assigned: "الدعم الفني", resolutionDays: 3 },
+    { ticket: "TK-7008", date: "2026-06-18", asset: "بريد الشركة", issue: "استعادة كلمة مرور", status: "مغلق", priority: "متوسطة", assigned: "الدعم الفني", resolutionDays: 1 },
+    { ticket: "TK-7005", date: "2026-06-15", asset: "كاميرات المستودع", issue: "كاميرا معطلة", status: "قيد العمل", priority: "عالية", assigned: "م. الشبكات", resolutionDays: 5 }
   ]
 };
 
@@ -77,41 +77,43 @@ window.RB_SCHEMA = {
     { key: "status", label: "الحالة", type: "select", options: ["جديد", "قيد التنفيذ", "متوقف", "مكتمل"] },
     { key: "due", label: "تاريخ التسليم", type: "date" }
   ]},
-  rb_portables: { name: "مصنع البرتبلات", icon: "ph-house-line", color: "orange", columns: [
-    { key: "code", label: "رقم الوحدة", type: "text" },
-    { key: "type", label: "النوع", type: "select", options: ["سكني", "مكتبي", "دورة مياه", "غرفة حارس", "استراحة"] },
-    { key: "client", label: "العميل", type: "text" },
-    { key: "size", label: "المقاس (م)", type: "text" },
-    { key: "stage", label: "مرحلة التصنيع", type: "select", options: ["هيكل", "تأسيس", "عزل وتكسية", "تشطيب", "جاهز"] },
-    { key: "progress", label: "نسبة الإنجاز %", type: "number" },
-    { key: "due", label: "موعد التسليم", type: "date" }
+  rb_portables: { name: "المصانع", icon: "ph-house-line", color: "orange", columns: [
+    { key: "code", label: "الكود", type: "text" },
+    { key: "type", label: "النوع", type: "select", options: ["برتبل", "مسكن عمال", "كبينة حراسة"] },
+    { key: "size", label: "المقاس", type: "text" },
+    { key: "qty", label: "الكمية", type: "number" },
+    { key: "unitPrice", label: "السعر الوحدة", type: "number" },
+    { key: "stage", label: "المرحلة", type: "select", options: ["جديد", "قيد التصنيع", "جاهز", "تم البيع"] },
+    { key: "due", label: "تاريخ التسليم", type: "date" }
   ]},
   rb_warehouses: { name: "المخازن والمستودعات", icon: "ph-warehouse", color: "amber", columns: [
-    { key: "code", label: "رمز الصنف", type: "text" },
-    { key: "name", label: "الصنف", type: "text" },
-    { key: "category", label: "التصنيف", type: "select", options: ["حديد", "إسمنت", "كهرباء", "عزل", "أدوات", "سباكة"] },
+    { key: "sku", label: "الكود", type: "text" },
+    { key: "item", label: "المادة", type: "text" },
+    { key: "category", label: "التصنيف", type: "text" },
     { key: "qty", label: "الكمية", type: "number" },
-    { key: "min", label: "الحد الأدنى", type: "number" },
     { key: "unit", label: "الوحدة", type: "text" },
-    { key: "warehouse", label: "المستودع", type: "select", options: ["الرئيسي", "الفرعي", "الموقع"] }
+    { key: "location", label: "المستودع", type: "text" },
+    { key: "minStock", label: "الحد الأدنى", type: "number" },
+    { key: "status", label: "الحالة", type: "select", options: ["متوفر", "منخفض", "نفذ"] }
   ]},
   rb_hr: { name: "شؤون الموظفين", icon: "ph-users", color: "blue", columns: [
     { key: "id", label: "الرقم الوظيفي", type: "text" },
     { key: "name", label: "الاسم", type: "text" },
-    { key: "job", label: "المسمى الوظيفي", type: "text" },
+    { key: "role", label: "المنصب", type: "text" },
     { key: "dept", label: "القسم", type: "select", options: ["الإدارة", "المالية", "المشاريع", "الموارد البشرية", "تقنية المعلومات", "المبيعات"] },
-    { key: "hire", label: "تاريخ التعيين", type: "date" },
     { key: "salary", label: "الراتب (ر.س)", type: "number" },
-    { key: "status", label: "الحالة", type: "select", options: ["على رأس العمل", "إجازة", "منتهي"] }
+    { key: "startDate", label: "تاريخ التعيين", type: "date" },
+    { key: "status", label: "الحالة", type: "select", options: ["نشط", "إجازة", "مستقيل"] }
   ]},
   rb_workers: { name: "شؤون العمال", icon: "ph-hard-hat", color: "orange", columns: [
     { key: "id", label: "الرقم", type: "text" },
     { key: "name", label: "الاسم", type: "text" },
-    { key: "nationality", label: "الجنسية", type: "text" },
-    { key: "trade", label: "المهنة", type: "select", options: ["لحام", "نجار", "كهربائي", "عامل", "سائق", "فني عزل"] },
-    { key: "project", label: "الموقع/المشروع", type: "text" },
-    { key: "iqama", label: "انتهاء الإقامة", type: "date" },
-    { key: "status", label: "الحالة", type: "select", options: ["نشط", "إجازة", "منتهي"] }
+    { key: "trade", label: "المهنة", type: "text" },
+    { key: "project", label: "المشروع المكلف", type: "text" },
+    { key: "dailyWage", label: "الأجر اليومي (ر.س)", type: "number" },
+    { key: "daysWorked", label: "أيام العمل", type: "number" },
+    { key: "totalDue", label: "المستحق (ر.س)", type: "number" },
+    { key: "status", label: "الحالة", type: "select", options: ["نشط", "متوقف", "مغادر"] }
   ]},
   rb_finance: { name: "الشؤون المالية", icon: "ph-money", color: "green", columns: [
     { key: "ref", label: "المرجع", type: "text" },
@@ -122,13 +124,13 @@ window.RB_SCHEMA = {
     { key: "amount", label: "المبلغ (ر.س)", type: "number" }
   ]},
   rb_it: { name: "تقنية المعلومات", icon: "ph-desktop", color: "purple", columns: [
-    { key: "ticket", label: "رقم التذكرة", type: "text" },
-    { key: "asset", label: "الأصل/الجهاز", type: "text" },
-    { key: "user", label: "المستخدم/القسم", type: "text" },
-    { key: "type", label: "النوع", type: "select", options: ["صيانة", "تركيب", "شبكة", "برمجيات", "دعم"] },
+    { key: "ticket", label: "رقم البلاغ", type: "text" },
+    { key: "date", label: "التاريخ", type: "date" },
+    { key: "asset", label: "الجهاز/الموقع", type: "text" },
+    { key: "issue", label: "العطل/الطلب", type: "text" },
+    { key: "status", label: "الحالة", type: "select", options: ["مفتوح", "قيد العمل", "مغلق"] },
     { key: "priority", label: "الأولوية", type: "select", options: ["عالية", "متوسطة", "منخفضة"] },
-    { key: "status", label: "الحالة", type: "select", options: ["مفتوحة", "قيد المعالجة", "مغلقة"] },
-    { key: "date", label: "التاريخ", type: "date" }
+    { key: "assigned", label: "المسؤول", type: "text" }
   ]}
 };
 

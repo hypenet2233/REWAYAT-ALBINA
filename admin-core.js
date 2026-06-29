@@ -15,7 +15,7 @@
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
   const sum = (d, k) => d.reduce((a, x) => a + (Number(x[k]) || 0), 0);
   const avg = (d, k) => d.length ? Math.round(sum(d, k) / d.length) : 0;
-  const count = (d, fn) => d.filter(fn).length;
+  const count = (d, fn) => fn ? d.filter(fn).length : d.length;
   const groupCount = (d, k) => { const m = {}; d.forEach(x => { const v = x[k] || "—"; m[v] = (m[v] || 0) + 1; }); return { labels: Object.keys(m), data: Object.values(m) }; };
   const groupSum = (d, k, vk) => { const m = {}; d.forEach(x => { const v = x[k] || "—"; m[v] = (m[v] || 0) + (Number(x[vk]) || 0); }); return { labels: Object.keys(m), data: Object.values(m) }; };
   window.AC = { money, sum, avg, count, groupCount, groupSum }; // متاح للإعدادات
@@ -129,6 +129,8 @@
     if (!host) return;
     if (!cfg.charts || !cfg.charts.length) { host.style.display = "none"; return; }
     host.style.display = "";
+    // انتظار تحميل مكتبة Chart.js من الـCDN قبل الرسم (تفادي سباق التحميل)
+    if (typeof Chart === "undefined") { setTimeout(renderCharts, 200); return; }
     if (!host.dataset.built) {
       host.innerHTML = cfg.charts.map((c, i) => `
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">

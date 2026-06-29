@@ -40,6 +40,10 @@ window.cfg = {
     { label: "إجمالي الطلبات", icon: "ph-stack", color: "maroon", calc: d => AC.count(d) },
     { label: "الإيرادات المتوقعة", icon: "ph-currency-circle-dollar", color: "green", calc: d => AC.money(AC.sum(d, "qty") * AC.sum(d, "unitPrice")) },
     { label: "جاهز للتسليم", icon: "ph-check-circle", color: "blue", calc: d => AC.count(d, x => x.stage === "جاهز") }
+  ],
+  charts: [
+    { title: "الوحدات حسب مرحلة التصنيع", type: "doughnut", icon: "ph-chart-pie-slice", calc: d => AC.groupCount(d, "stage") },
+    { title: "عدد الوحدات حسب النوع", type: "bar", icon: "ph-chart-bar", calc: d => AC.groupCount(d, "type") }
   ]
 };
 </script>
