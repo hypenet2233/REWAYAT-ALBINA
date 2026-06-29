@@ -462,7 +462,7 @@
                 </button>
                 <div class="relative hidden sm:block">
                     <i class="ph ph-magnifying-glass absolute right-3 top-1/2 transform -translate-y-1/2" style="color: #8E2E3A; opacity: 0.5;"></i>
-                    <input type="text" onkeyup="if(event.key === 'Enter') showMessage('نتائج البحث عن: ' + this.value)" placeholder="بحث عام (اضغط Enter)..." 
+                    <input id="globalSearchInput" type="text" onkeyup="if(event.key === 'Enter') globalSearch(this.value)" placeholder="بحث عام في كل الأقسام (اضغط Enter)..."
                         class="pl-4 pr-10 py-2.5 rounded-full text-sm focus:outline-none w-64 transition-all"
                         style="background: #F5F0EB; border: 2px solid transparent; color: #5a1c25;"
                         onfocus="this.style.borderColor='#EA7A2C'; this.style.background='white'; this.style.boxShadow='0 0 0 4px rgba(243,128,49,0.15)'"
@@ -470,7 +470,14 @@
                 </div>
             </div>
             
-            <div class="flex items-center gap-5">
+            <div class="flex items-center gap-3 md:gap-4">
+                <button onclick="backupAll()" title="نسخة احتياطية لكل بيانات النظام" class="relative p-2.5 rounded-full transition-all" style="background: #F5F0EB; color: #8E2E3A;">
+                    <i class="ph ph-cloud-arrow-down text-xl"></i>
+                </button>
+                <button onclick="document.getElementById('restoreFile').click()" title="استعادة من نسخة احتياطية (مزامنة جهاز آخر)" class="relative p-2.5 rounded-full transition-all" style="background: #F5F0EB; color: #8E2E3A;">
+                    <i class="ph ph-cloud-arrow-up text-xl"></i>
+                </button>
+                <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="restoreAll(this)">
                 <button onclick="showMessage('لا توجد تنبيهات جديدة حالياً')" class="relative p-2.5 rounded-full transition-all" style="background: #F5F0EB; color: #8E2E3A;">
                     <i class="ph ph-bell text-xl"></i>
                     <span class="notify-badge"></span>
@@ -581,6 +588,17 @@
 
         </div>
     </main>
+
+    <!-- Modal نتائج البحث العام -->
+    <div id="searchModal" class="modal-overlay fixed inset-0 z-[80] hidden flex items-start justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mt-16 md:mt-20 flex flex-col" style="max-height:78vh; border-top:5px solid #8E2E3A;">
+            <div class="p-4 flex items-center justify-between" style="border-bottom:1px solid #f0e2d6; background:#FDF8F3;">
+                <h3 class="font-bold flex items-center gap-2" style="color:#8E2E3A;"><i class="ph ph-magnifying-glass"></i> نتائج البحث: <span id="searchTerm" style="color:#EA7A2C;"></span></h3>
+                <button onclick="closeSearch()" style="color:#8E2E3A;"><i class="ph ph-x text-xl"></i></button>
+            </div>
+            <div id="searchResults" class="p-4 overflow-y-auto"></div>
+        </div>
+    </div>
 
     <!-- Modal الرسائل -->
     <div id="messageModal" class="modal-overlay fixed inset-0 z-[60] hidden flex items-center justify-center">
@@ -873,6 +891,77 @@
                 });
             }, 100);
         }
+
+        /* ============================================================
+           البحث العام + النسخ الاحتياطي/الاستعادة (عبر كل بيانات الأقسام)
+           ============================================================ */
+        const RB_MODULES = [
+            { key: 'rb_contracting', name: 'المقاولات العامة', tab: 'contracting', icon: 'ph-buildings' },
+            { key: 'rb_portables',  name: 'مصنع البرتبلات',    tab: 'portables',  icon: 'ph-house-line' },
+            { key: 'rb_warehouses', name: 'المخازن والمستودعات', tab: 'warehouses', icon: 'ph-warehouse' },
+            { key: 'rb_hr',         name: 'شؤون الموظفين',      tab: 'hr',         icon: 'ph-users' },
+            { key: 'rb_workers',    name: 'شؤون العمال',        tab: 'workers',    icon: 'ph-hard-hat' },
+            { key: 'rb_finance',    name: 'الشؤون المالية',     tab: 'finance',    icon: 'ph-money' },
+            { key: 'rb_it',         name: 'تقنية المعلومات',    tab: 'it',         icon: 'ph-desktop' }
+        ];
+        const sEsc = s => String(s == null ? '' : s).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+
+        function globalSearch(q) {
+            q = (q || '').trim().toLowerCase();
+            const box = document.getElementById('searchResults');
+            document.getElementById('searchTerm').textContent = q || '—';
+            openSearch();
+            if (!q) { box.innerHTML = '<p class="text-center py-8" style="color:#8E2E3A;opacity:.6;">اكتب كلمة للبحث في كل الأقسام</p>'; return; }
+            let total = 0, html = '';
+            RB_MODULES.forEach(m => {
+                const rows = moduleData(m.key).filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(q)));
+                if (!rows.length) return;
+                total += rows.length;
+                html += `<div class="mb-4"><div class="flex items-center gap-2 mb-2 font-bold" style="color:#8E2E3A;"><i class="ph ${m.icon}"></i> ${m.name} <span class="text-xs font-normal" style="opacity:.5;">(${rows.length})</span></div>`;
+                rows.slice(0, 8).forEach(r => {
+                    const summary = Object.entries(r).filter(([k, v]) => k !== '_id' && v !== '' && v != null).slice(0, 4).map(([k, v]) => v).join('  ·  ');
+                    html += `<div class="flex items-center justify-between gap-3 p-2.5 rounded-lg text-sm" style="border-bottom:1px solid #f5e6d8;"><span style="color:#5a1c25;">${sEsc(summary)}</span><button onclick="gotoTab('${m.tab}')" class="text-xs px-3 py-1 rounded-lg text-white shrink-0" style="background:#EA7A2C;">اذهب للقسم</button></div>`;
+                });
+                html += `</div>`;
+            });
+            box.innerHTML = total ? `<p class="text-xs mb-3" style="color:#8E2E3A;opacity:.6;">عدد النتائج: ${total}</p>` + html
+                : '<p class="text-center py-8" style="color:#8E2E3A;opacity:.6;"><i class="ph ph-magnifying-glass-minus text-3xl block mb-2"></i>لا توجد نتائج مطابقة</p>';
+        }
+        function openSearch() { document.getElementById('searchModal').classList.remove('hidden'); }
+        function closeSearch() { document.getElementById('searchModal').classList.add('hidden'); }
+        function gotoTab(tab) {
+            closeSearch();
+            const btn = [...document.querySelectorAll('.nav-btn')].find(b => (b.getAttribute('onclick') || '').includes("'" + tab + "'"));
+            if (btn) switchTab(tab, btn);
+        }
+
+        function backupAll() {
+            const data = { _meta: { app: 'REWAYAT ALBINA', exportedAt: new Date().toISOString() } };
+            RB_MODULES.forEach(m => data[m.key] = moduleData(m.key));
+            try { const dc = localStorage.getItem('rb_documents_cards'); if (dc) data.rb_documents_cards = JSON.parse(dc); } catch (e) {}
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'نسخة-احتياطية-روايات-البناء-' + new Date().toISOString().slice(0, 10) + '.json';
+            a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+            showMessage('تم تنزيل نسخة احتياطية كاملة لبيانات النظام. احفظها أو انقلها لجهاز آخر للاستعادة.');
+        }
+        function restoreAll(input) {
+            const f = input.files[0]; if (!f) return;
+            const rd = new FileReader();
+            rd.onload = () => {
+                try {
+                    const d = JSON.parse(rd.result); let n = 0;
+                    RB_MODULES.forEach(m => { if (Array.isArray(d[m.key])) { localStorage.setItem(m.key, JSON.stringify(d[m.key])); n++; } });
+                    if (Array.isArray(d.rb_documents_cards)) localStorage.setItem('rb_documents_cards', JSON.stringify(d.rb_documents_cards));
+                    document.querySelectorAll('iframe[data-src]').forEach(fr => { if (fr.src) fr.src = fr.src; });
+                    computeDashboard();
+                    showMessage('تمت استعادة البيانات بنجاح (' + n + ' أقسام). تم تحديث التبويبات تلقائيًا.');
+                } catch (e) { showMessage('تعذّرت الاستعادة: ملف النسخة الاحتياطية غير صالح.'); }
+            };
+            rd.readAsText(f); input.value = '';
+        }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSearch(); });
 
         computeDashboard();
         checkNotifications();
