@@ -40,7 +40,7 @@ button.pri:hover { filter: brightness(1.08); }
 
 /* Board */
 .board { background: var(--panel); border-radius: 12px; box-shadow: var(--shadow); overflow: auto; max-height: 72vh; }
-.board-inner { display: flex; min-width: max-content; align-items: stretch; }
+.board-inner { display: flex; min-width: max-content; align-items: flex-start; }
 table { border-collapse: collapse; }
 th, td { border: 1px solid var(--line); padding: 0; text-align: center; height: var(--rowH); }
 thead th { background: var(--head2); font-weight: 700; position: sticky; z-index: 6; }
@@ -55,7 +55,7 @@ thead tr:nth-child(2) th { top: var(--rowH); }
 .info .c-no { width: 40px; color: var(--muted); font-weight: bold; }
 .info .c-name { width: 260px; text-align: right; padding-right: 10px; font-weight: 600; color: #1e293b; }
 .info .c-prog { width: 80px; }
-.prog input { background: #dcfce7; color: #166534; font-weight: 900; border: 2px solid #22c55e; border-radius: 6px; padding: 6px; width: 65px; font-size: 16px; text-align: center; outline: none; transition: 0.2s; }
+.prog input { background: #dcfce7; color: #166534; font-weight: 900; border: 2px solid #22c55e; border-radius: 6px; padding: 2px; width: 62px; height: 28px; font-size: 15px; line-height: 1; text-align: center; outline: none; transition: 0.2s; }
 .prog input:focus { border-color: #15803d; background: #bbf7d0; }
 .info .c-name input { width: 100%; border: 1px solid transparent; background: transparent; text-align: right; font: inherit; font-weight: 600; color: #1e293b; padding: 6px; border-radius: 6px; outline: none; transition: .15s; }
 .info .c-name input:hover { border-color: var(--line); }
@@ -66,6 +66,13 @@ thead tr:nth-child(2) th { top: var(--rowH); }
 .add-row td { padding: 8px; background: #fafbfe; text-align: center; }
 .add-task-btn { background: #fff; color: var(--brand-ink); border-color: var(--brand); }
 .add-task-btn:hover { background: #fff3e9; }
+/* تثبيت تساوي ارتفاع صفوف جدول البنود وجدول الشبكة ومنع التمدد */
+.board-inner tbody tr { height: var(--rowH); }
+.board-inner td { height: var(--rowH); box-sizing: border-box; overflow: hidden; vertical-align: middle; }
+.info .c-name input { padding: 3px 6px; height: 28px; line-height: 1.3; }
+.info .c-act button { padding: 2px 5px; line-height: 1.2; }
+.info .c-act { white-space: nowrap; }
+.add-row td { height: auto; }
 
 /* Grid Pane */
 .grid thead .wk { background: var(--head); color: #3a2e00; font-size: 13px; }
@@ -294,7 +301,7 @@ function renderInfo(){
 
   state.tasks.forEach((tk, i) => {
     h += `<tr data-i="${i}">
-      <td class="c-no">${tk.id}</td>
+      <td class="c-no">${i+1}</td>
       <td class="c-name"><input value="${esc(tk.name)}" data-f="name" data-i="${i}" placeholder="اسم البند"></td>
       <td class="c-prog prog"><input type="number" min="0" max="100" value="${tk.prog||0}" data-f="prog" data-i="${i}"></td>
       <td class="c-act">
