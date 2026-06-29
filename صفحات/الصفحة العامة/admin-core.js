@@ -126,7 +126,9 @@
   /* ---------- الرسوم البيانية ---------- */
   function renderCharts() {
     const host = $("#charts");
-    if (!cfg.charts || !cfg.charts.length) { host.remove?.(); return; }
+    if (!host) return;
+    if (!cfg.charts || !cfg.charts.length) { host.style.display = "none"; return; }
+    host.style.display = "";
     if (!host.dataset.built) {
       host.innerHTML = cfg.charts.map((c, i) => `
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
