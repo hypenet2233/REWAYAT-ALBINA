@@ -1,0 +1,18 @@
+# ملفات نظام التشغيل
+desktop.ini
+Thumbs.db
+ehthumbs.db
+.DS_Store
+.DS_Store?
+._*
+
+# ملفات مؤقتة ونسخ احتياطية
+*.tmp
+*.temp
+*.log
+*.bak
+~$*
+
+# محررات
+.vscode/
+.idea/

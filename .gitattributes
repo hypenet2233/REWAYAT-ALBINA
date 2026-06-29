@@ -1,2 +1,17 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# تطبيع نهايات الأسطر تلقائيًا
+* text=auto eol=lf
+
+# ملفات نصية
+*.html text
+*.js   text
+*.css  text
+*.md   text
+*.json text
+
+# ملفات ثنائية (لا تُعدّل نهايات أسطرها)
+*.jpg  binary
+*.jpeg binary
+*.png  binary
+*.gif  binary
+*.ico  binary
+*.pdf  binary
