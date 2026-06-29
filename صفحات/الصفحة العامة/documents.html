@@ -30,7 +30,7 @@
     <div class="flex items-center gap-2">
       <div class="relative">
         <i class="ph ph-magnifying-glass absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-        <input id="search" placeholder="بحث..." class="pr-9 pl-3 py-2.5 bg-white border border-[#8E2E3A]/15 rounded-xl text-sm w-44 focus:outline-none focus:ring-2 focus:ring-[#F38031]/30">
+        <input id="search" placeholder="بحث..." class="pr-9 pl-3 py-2.5 bg-white border border-[#8E2E3A]/15 rounded-xl text-sm w-44 focus:outline-none focus:ring-2 focus:ring-[#EA7A2C]/30">
       </div>
       <button id="btnAddCard" class="px-4 py-2.5 bg-gradient-to-l from-[#8E2E3A] to-[#b8434f] text-white rounded-xl text-sm font-bold hover:shadow-lg transition flex items-center gap-1.5"><i class="ph ph-plus-circle text-lg"></i> إضافة بطاقة</button>
     </div>
@@ -48,7 +48,7 @@
       <button onclick="DOCS.closeCard()" class="text-gray-400 hover:text-gray-700"><i class="ph ph-x text-xl"></i></button>
     </div>
     <div class="p-5 space-y-3">
-      <div><label class="text-xs text-gray-500">العنوان</label><input id="c_title" class="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F38031]/25"></div>
+      <div><label class="text-xs text-gray-500">العنوان</label><input id="c_title" class="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA7A2C]/25"></div>
       <div><label class="text-xs text-gray-500">النوع</label>
         <select id="c_type" onchange="DOCS.onTypeChange()" class="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm">
           <option value="form">نموذج (يُسجّل في قسم)</option>
@@ -79,7 +79,7 @@
     <div id="formFields" class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
     <div class="p-4 border-t border-gray-100 flex gap-2 items-center">
       <p class="text-xs text-gray-400 flex-1"><i class="ph ph-link-simple"></i> <span id="formHint"></span></p>
-      <button onclick="DOCS.submitForm()" class="bg-[#F38031] text-white font-bold px-5 py-2 rounded-lg hover:brightness-105 transition flex items-center gap-1.5"><i class="ph ph-check-circle"></i> اعتماد وتسجيل</button>
+      <button onclick="DOCS.submitForm()" class="bg-[#EA7A2C] text-white font-bold px-5 py-2 rounded-lg hover:brightness-105 transition flex items-center gap-1.5"><i class="ph ph-check-circle"></i> اعتماد وتسجيل</button>
       <button onclick="DOCS.closeForm()" class="bg-gray-100 text-gray-600 font-bold px-4 py-2 rounded-lg hover:bg-gray-200 transition">إلغاء</button>
     </div>
   </div>
@@ -120,7 +120,7 @@ const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, m => ({ "&": "&am
 const gid = () => "r" + Math.random().toString(36).slice(2, 9);
 const SCHEMA = window.RB_SCHEMA || {};
 const SEED = window.RB_SEED || {};
-const GRAD = { maroon: "from-[#8E2E3A] to-[#b8434f]", orange: "from-[#F38031] to-[#f6a661]", green: "from-emerald-500 to-emerald-400", blue: "from-blue-500 to-sky-400", purple: "from-violet-500 to-purple-400", amber: "from-amber-500 to-yellow-400" };
+const GRAD = { maroon: "from-[#8E2E3A] to-[#b8434f]", orange: "from-[#EA7A2C] to-[#F2A05C]", green: "from-emerald-500 to-emerald-400", blue: "from-blue-500 to-sky-400", purple: "from-violet-500 to-purple-400", amber: "from-amber-500 to-yellow-400" };
 const BADGE = { maroon: "bg-[#8E2E3A]/10 text-[#8E2E3A]", orange: "bg-orange-100 text-orange-700", green: "bg-emerald-100 text-emerald-700", blue: "bg-blue-100 text-blue-700", purple: "bg-violet-100 text-violet-700", amber: "bg-amber-100 text-amber-700", gray: "bg-gray-100 text-gray-600" };
 
 const DOC_KEY = "rb_documents_cards";
@@ -191,7 +191,7 @@ function openForm(card) {
   $("#formTitle").innerHTML = `<i class="ph ${esc(card.icon) || "ph-note-pencil"} text-[#8E2E3A]"></i> ${esc(card.title)}`;
   $("#formHint").textContent = `يُسجَّل في: ${m.name}`;
   $("#formFields").innerHTML = m.columns.map(col => {
-    const base = "w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F38031]/25";
+    const base = "w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA7A2C]/25";
     let input;
     if (col.type === "select") input = `<select data-k="${col.key}" class="${base}">${col.options.map(o => `<option>${esc(o)}</option>`).join("")}</select>`;
     else if (col.type === "date") input = `<input data-k="${col.key}" type="date" class="${base}">`;

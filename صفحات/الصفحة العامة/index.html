@@ -31,7 +31,7 @@
                             maroon: '#8E2E3A',
                             darkmaroon: '#5a1c25',
                             lightmaroon: '#b53d4c',
-                            orange: '#F38031',
+                            orange: '#EA7A2C',
                             darkorange: '#c56420',
                             lightorange: '#ff9a55',
                             cream: '#FDF8F3',
@@ -90,7 +90,7 @@
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #F5F0EB; }
         ::-webkit-scrollbar-thumb { background: #8E2E3A; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #F38031; }
+        ::-webkit-scrollbar-thumb:hover { background: #EA7A2C; }
         
         .tab-content { display: none; animation: fadeIn 0.4s ease-in-out; }
         .tab-content.active { display: block; }
@@ -99,7 +99,7 @@
         /* تنسيق مربعات التعديل النشطة */
         .editable-text.editing {
             background-color: #ffffff;
-            border: 2px solid #F38031;
+            border: 2px solid #EA7A2C;
             padding: 4px 8px;
             border-radius: 6px;
             box-shadow: 0 2px 8px rgba(243,128,49,0.2);
@@ -145,7 +145,7 @@
             box-shadow: 0 4px 15px rgba(142,46,58,0.3);
         }
         .icon-box.orange {
-            background: linear-gradient(135deg, #F38031 0%, #ff9a55 100%);
+            background: linear-gradient(135deg, #EA7A2C 0%, #ff9a55 100%);
             color: white;
             box-shadow: 0 4px 15px rgba(243,128,49,0.3);
         }
@@ -162,7 +162,7 @@
 
         /* حدود جانبية ملونة كثيفة */
         .border-accent-maroon { border-right: 5px solid #8E2E3A; }
-        .border-accent-orange { border-right: 5px solid #F38031; }
+        .border-accent-orange { border-right: 5px solid #EA7A2C; }
         .border-accent-green { border-right: 5px solid #10b981; }
         .border-accent-blue { border-right: 5px solid #3b82f6; }
 
@@ -170,7 +170,7 @@
         .nav-active {
             background: linear-gradient(90deg, rgba(243,128,49,0.2) 0%, rgba(243,128,49,0.05) 100%);
             color: #ffb366 !important;
-            border-right: 4px solid #F38031 !important;
+            border-right: 4px solid #EA7A2C !important;
             font-weight: 700;
         }
 
@@ -187,7 +187,7 @@
             position: absolute;
             top: 0; right: 0;
             width: 10px; height: 10px;
-            background: #F38031;
+            background: #EA7A2C;
             border-radius: 50%;
             border: 2px solid white;
             box-shadow: 0 0 0 2px rgba(243,128,49,0.3);
@@ -256,7 +256,7 @@
             display: inline-block;
         }
         .progress-low { background: linear-gradient(90deg, #ef4444, #f87171); }
-        .progress-mid { background: linear-gradient(90deg, #F38031, #ff9a55); }
+        .progress-mid { background: linear-gradient(90deg, #EA7A2C, #ff9a55); }
         .progress-high { background: linear-gradient(90deg, #10b981, #34d399); }
         .progress-done { background: linear-gradient(90deg, #8E2E3A, #b53d4c); }
 
@@ -337,7 +337,7 @@
         }
         .section-title .line {
             width: 6px; height: 32px;
-            background: linear-gradient(180deg, #F38031 0%, #8E2E3A 100%);
+            background: linear-gradient(180deg, #EA7A2C 0%, #8E2E3A 100%);
             border-radius: 3px;
         }
         .section-title h2 {
@@ -375,7 +375,7 @@
             font-weight: 800;
             font-size: 1.1rem;
             display: flex; align-items: center; justify-content: center;
-            border: 3px solid #F38031;
+            border: 3px solid #EA7A2C;
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
     </style>
@@ -454,7 +454,7 @@
                     <input type="text" onkeyup="if(event.key === 'Enter') showMessage('نتائج البحث عن: ' + this.value)" placeholder="بحث عام (اضغط Enter)..." 
                         class="pl-4 pr-10 py-2.5 rounded-full text-sm focus:outline-none w-64 transition-all"
                         style="background: #F5F0EB; border: 2px solid transparent; color: #5a1c25;"
-                        onfocus="this.style.borderColor='#F38031'; this.style.background='white'; this.style.boxShadow='0 0 0 4px rgba(243,128,49,0.15)'"
+                        onfocus="this.style.borderColor='#EA7A2C'; this.style.background='white'; this.style.boxShadow='0 0 0 4px rgba(243,128,49,0.15)'"
                         onblur="this.style.borderColor='transparent'; this.style.background='#F5F0EB'; this.style.boxShadow='none'">
                 </div>
             </div>
@@ -844,7 +844,7 @@
                         <div class="progress-track" title="${p.label} — ${p.pct}% من واقع البرنامج">
                             <div class="progress-fill ${p.color}" style="width: 0%" data-width="${p.pct}%"></div>
                         </div>
-                        <span class="progress-pct" style="color: ${p.color === 'progress-low' ? '#ef4444' : p.color === 'progress-mid' ? '#F38031' : p.color === 'progress-high' ? '#10b981' : '#8E2E3A'};">${p.pct}% ${p.label}</span>
+                        <span class="progress-pct" style="color: ${p.color === 'progress-low' ? '#ef4444' : p.color === 'progress-mid' ? '#EA7A2C' : p.color === 'progress-high' ? '#10b981' : '#8E2E3A'};">${p.pct}% ${p.label}</span>
                     </div>
                 </td>
                 <td class="text-xs whitespace-nowrap" style="color: #8E2E3A; opacity: 0.5;">${it.d || '—'}</td></tr>`;

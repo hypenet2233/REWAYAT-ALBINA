@@ -21,7 +21,7 @@
   window.AC = { money, sum, avg, count, groupCount, groupSum }; // متاح للإعدادات
 
   const GRAD = {
-    maroon: "from-[#8E2E3A] to-[#b8434f]", orange: "from-[#F38031] to-[#f6a661]",
+    maroon: "from-[#8E2E3A] to-[#b8434f]", orange: "from-[#EA7A2C] to-[#F2A05C]",
     green: "from-emerald-500 to-emerald-400", blue: "from-blue-500 to-sky-400",
     purple: "from-violet-500 to-purple-400", red: "from-rose-500 to-red-400",
     teal: "from-teal-500 to-cyan-400", amber: "from-amber-500 to-yellow-400"
@@ -32,7 +32,7 @@
     gray: "bg-gray-100 text-gray-600", purple: "bg-violet-100 text-violet-700",
     amber: "bg-amber-100 text-amber-700", maroon: "bg-[#8E2E3A]/10 text-[#8E2E3A]"
   };
-  const PALETTE = ["#8E2E3A", "#F38031", "#3b82f6", "#10b981", "#8b5cf6", "#ef4444", "#14b8a6", "#f59e0b", "#64748b"];
+  const PALETTE = ["#8E2E3A", "#EA7A2C", "#3b82f6", "#10b981", "#8b5cf6", "#ef4444", "#14b8a6", "#f59e0b", "#64748b"];
 
   /* ---------- الحالة ---------- */
   let DATA = loadData(), editingId = null, search = "", sortKey = null, sortDir = 1, toDelete = null;
@@ -70,7 +70,7 @@
           </div>
           <div class="relative">
             <i class="ph ph-magnifying-glass absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-            <input id="search" placeholder="بحث فوري..." class="pr-9 pl-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm w-48 focus:outline-none focus:ring-2 focus:ring-[#F38031]/30 focus:border-[#F38031] transition">
+            <input id="search" placeholder="بحث فوري..." class="pr-9 pl-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm w-48 focus:outline-none focus:ring-2 focus:ring-[#EA7A2C]/30 focus:border-[#EA7A2C] transition">
           </div>
           <button id="btnExport" class="px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-600 hover:border-[#8E2E3A] hover:text-[#8E2E3A] transition flex items-center gap-1.5" title="تصدير Excel/CSV"><i class="ph ph-file-csv text-lg"></i><span class="hidden sm:inline">تصدير</span></button>
           <button id="btnReset" class="px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-600 hover:border-rose-400 hover:text-rose-500 transition" title="استعادة البيانات الأصلية"><i class="ph ph-arrow-counter-clockwise text-lg"></i></button>
@@ -87,7 +87,7 @@
       <!-- السجلات: جدول أو بطاقات (حسب نمط العرض) -->
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="p-4 border-b border-gray-100 flex items-center justify-between bg-gradient-to-l from-gray-50 to-white">
-          <h3 class="font-bold text-gray-800 flex items-center gap-2"><i class="ph ph-rows text-[#F38031]"></i> السجلات <span class="text-xs font-normal text-gray-400">(<span id="count">0</span>)</span></h3>
+          <h3 class="font-bold text-gray-800 flex items-center gap-2"><i class="ph ph-rows text-[#EA7A2C]"></i> السجلات <span class="text-xs font-normal text-gray-400">(<span id="count">0</span>)</span></h3>
           <span id="viewHint" class="text-xs text-gray-400 hidden sm:flex items-center gap-1"></span>
         </div>
         <div id="listHost"></div>
@@ -153,7 +153,7 @@
           datasets: [{
             label: c.title, data: res.data,
             backgroundColor: type === "line" ? "rgba(243,128,49,.15)" : colors,
-            borderColor: type === "line" ? "#F38031" : (type === "bar" ? colors : "#fff"),
+            borderColor: type === "line" ? "#EA7A2C" : (type === "bar" ? colors : "#fff"),
             borderWidth: type === "doughnut" ? 3 : 2,
             borderRadius: type === "bar" ? 8 : 0,
             fill: type === "line", tension: .35, pointBackgroundColor: "#8E2E3A"
@@ -175,7 +175,7 @@
   function cellDisplay(c, v) {
     if (c.type === "progress") {
       const p = Math.max(0, Math.min(100, Number(v) || 0));
-      const col = p >= 100 ? "#10b981" : p >= 50 ? "#F38031" : "#8E2E3A";
+      const col = p >= 100 ? "#10b981" : p >= 50 ? "#EA7A2C" : "#8E2E3A";
       return `<div class="flex items-center gap-2 min-w-[110px]"><div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden"><div class="h-full rounded-full transition-all" style="width:${p}%;background:${col}"></div></div><span class="text-xs font-bold text-gray-600 w-8">${p}%</span></div>`;
     }
     if (c.type === "badge") { const col = (c.colors && c.colors[v]) || "gray"; return `<span class="px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap ${BADGE[col] || BADGE.gray}">${esc(v) || "—"}</span>`; }
@@ -184,7 +184,7 @@
     return `<span class="text-gray-700">${esc(v) || "—"}</span>`;
   }
   function cellInput(c, v) {
-    const base = "w-full bg-white border border-[#F38031]/60 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#F38031]/25";
+    const base = "w-full bg-white border border-[#EA7A2C]/60 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA7A2C]/25";
     if (c.type === "badge") return `<select data-k="${c.key}" class="${base}">${c.options.map(o => `<option ${o === v ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>`;
     if (c.type === "date") return `<input data-k="${c.key}" type="date" value="${esc(v)}" class="${base}">`;
     if (c.type === "number" || c.type === "money" || c.type === "progress") return `<input data-k="${c.key}" type="number" value="${Number(v) || 0}" class="${base} text-center">`;
@@ -210,7 +210,7 @@
   function tableMarkup(rows) {
     const head = cfg.columns.map(c => {
       const arrow = sortKey === c.key ? (sortDir === 1 ? " ▲" : " ▼") : "";
-      return `<th class="py-3 px-3 font-bold whitespace-nowrap cursor-pointer hover:text-[#8E2E3A]" onclick="ADM.sort('${c.key}')">${esc(c.label)}<span class="text-[#F38031]">${arrow}</span></th>`;
+      return `<th class="py-3 px-3 font-bold whitespace-nowrap cursor-pointer hover:text-[#8E2E3A]" onclick="ADM.sort('${c.key}')">${esc(c.label)}<span class="text-[#EA7A2C]">${arrow}</span></th>`;
     }).join("") + `<th class="py-3 px-3 text-center w-24">الإجراءات</th>`;
     const body = rows.length ? rows.map(rowHtml).join("")
       : `<tr><td colspan="${cfg.columns.length + 1}" class="text-center py-12 text-gray-400"><i class="ph ph-tray text-4xl block mb-2"></i>لا توجد بيانات مطابقة</td></tr>`;
@@ -223,7 +223,7 @@
     const titleCol = cols.find(c => ["name", "title", "desc"].includes(c.key)) || cols.find(c => /اسم|البيان/.test(c.label)) || cols.find(c => c.type === "text") || cols[0];
     if (editing) {
       const fields = cols.map(c => `<div><label class="block text-[11px] text-gray-400 mb-0.5">${esc(c.label)}</label>${cellInput(c, item[c.key])}</div>`).join("");
-      return `<div data-id="${item._id}" class="bg-white rounded-2xl border-2 border-[#F38031] shadow-md p-4">
+      return `<div data-id="${item._id}" class="bg-white rounded-2xl border-2 border-[#EA7A2C] shadow-md p-4">
         <div class="grid grid-cols-2 gap-2.5 mb-3">${fields}</div>
         <div class="flex gap-2">
           <button onclick="ADM.save('${item._id}')" class="flex-1 bg-emerald-500 text-white text-sm font-bold py-1.5 rounded-lg hover:bg-emerald-600 transition flex items-center justify-center gap-1"><i class="ph ph-check-circle"></i> حفظ</button>
@@ -304,7 +304,7 @@
 
   let toastT;
   function toast(msg, color = "green") {
-    const t = $("#toast"); const bg = { green: "bg-emerald-500", red: "bg-rose-500", blue: "bg-blue-500", orange: "bg-[#F38031]" }[color] || "bg-gray-800";
+    const t = $("#toast"); const bg = { green: "bg-emerald-500", red: "bg-rose-500", blue: "bg-blue-500", orange: "bg-[#EA7A2C]" }[color] || "bg-gray-800";
     const ic = { green: "ph-check-circle", red: "ph-warning-circle", blue: "ph-info", orange: "ph-bell" }[color] || "ph-info";
     t.className = `fixed bottom-6 left-1/2 -translate-x-1/2 transition-all duration-300 z-[80] px-5 py-3 rounded-xl shadow-2xl text-white font-bold text-sm flex items-center gap-2 ${bg}`;
     t.innerHTML = `<i class="ph ${ic} text-lg"></i> ${esc(msg)}`;
