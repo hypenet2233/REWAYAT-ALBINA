@@ -410,6 +410,9 @@
         
         <div class="p-3 flex-1 overflow-y-auto">
             <nav class="space-y-1">
+                <button onclick="switchTab('control', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/75 hover:text-white hover:bg-white/10 rounded-lg transition-all font-medium">
+                    <i class="ph ph-gauge text-xl"></i> مركز القيادة الشامل
+                </button>
                 <button onclick="switchTab('dashboard', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 nav-active rounded-lg transition-all">
                     <i class="ph ph-squares-four text-xl"></i> لوحة القيادة
                 </button>
@@ -497,6 +500,19 @@
         <!-- منطقة التبويبات -->
         <div class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
             
+            <!-- تبويب: مركز القيادة الشامل -->
+            <div id="control" class="tab-content">
+                <div class="flex flex-wrap items-center gap-3 mb-6">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white shrink-0" style="background:linear-gradient(135deg,#8E2E3A,#EA7A2C)"><i class="ph ph-gauge text-2xl"></i></div>
+                    <div>
+                        <h2 class="text-2xl font-extrabold" style="color:#8E2E3A">مركز القيادة الشامل</h2>
+                        <p class="text-sm" style="color:#8E2E3A;opacity:.7">العقل المدبّر — نظرة تنفيذية حيّة على جميع أقسام المؤسسة</p>
+                    </div>
+                    <button onclick="renderControlCenter()" class="mr-auto px-3 py-2 rounded-lg text-sm font-bold text-white" style="background:#8E2E3A"><i class="ph ph-arrows-clockwise"></i> تحديث</button>
+                </div>
+                <div id="ctrlBody"></div>
+            </div>
+
             <!-- تبويب: لوحة القيادة -->
             <div id="dashboard" class="tab-content active">
                 <div class="section-title">
@@ -642,6 +658,7 @@
             if (frame && !frame.src) frame.src = frame.dataset.src;
 
             if (tabId === 'dashboard') computeDashboard();
+            if (tabId === 'control') renderControlCenter();
 
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.remove('nav-active');
@@ -962,6 +979,89 @@
             rd.readAsText(f); input.value = '';
         }
         document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSearch(); });
+
+        /* ============================================================
+           مركز القيادة الشامل — تجميع حيّ من كل الأقسام + تنبيهات ذكية
+           ============================================================ */
+        function renderControlCenter() {
+            const body = document.getElementById('ctrlBody'); if (!body) return;
+            const C = moduleData('rb_contracting'), P = moduleData('rb_portables'), W = moduleData('rb_warehouses'),
+                  H = moduleData('rb_hr'), Wk = moduleData('rb_workers'), F = moduleData('rb_finance'), I = moduleData('rb_it');
+            const S = (a, k) => a.reduce((s, x) => s + (Number(x[k]) || 0), 0);
+            const f = n => Number(n || 0).toLocaleString('en-US');
+            const rev = S(F.filter(x => x.type === 'إيراد'), 'amount'), exp = S(F.filter(x => x.type === 'مصروف'), 'amount'), net = rev - exp;
+            const activeP = C.filter(x => x.status === 'قيد التنفيذ');
+            const lowStock = W.filter(x => x.status === 'منخفض' || x.status === 'نفذ' || (x.minStock != null && Number(x.qty) < Number(x.minStock)));
+            const openT = I.filter(x => x.status !== 'مغلق'), highT = I.filter(x => x.priority === 'عالية' && x.status !== 'مغلق');
+            const stalled = C.filter(x => x.status === 'متوقف');
+            const stoppedW = Wk.filter(x => x.status === 'متوقف' || x.status === 'مغادر');
+            const inProd = P.filter(x => x.stage !== 'جاهز' && x.stage !== 'تم البيع');
+            const soon = C.filter(x => x.status !== 'مكتمل' && x.due && ((new Date(x.due) - Date.now()) / 864e5) <= 30 && ((new Date(x.due) - Date.now()) / 864e5) >= 0);
+            const avgProg = C.length ? Math.round(S(C, 'progress') / C.length) : 0;
+
+            const kpi = (label, val, icon, grad) => `<div class="bg-white rounded-2xl p-4 shadow-sm border" style="border-color:rgba(142,46,58,.1)"><div class="flex items-center gap-3"><div class="w-11 h-11 rounded-xl flex items-center justify-center text-white shrink-0" style="background:linear-gradient(135deg,${grad})"><i class="ph ${icon} text-xl"></i></div><div class="min-w-0"><p class="text-[11px] truncate" style="color:#8E2E3A;opacity:.65">${label}</p><h3 class="text-lg font-extrabold" style="color:#5a1c25">${val}</h3></div></div></div>`;
+            const kpis = `<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                ${kpi('مشاريع نشطة', activeP.length, 'ph-buildings', '#8E2E3A,#b8434f')}
+                ${kpi('قيمة العقود', f(S(C, 'value')), 'ph-currency-circle-dollar', '#EA7A2C,#F2A05C')}
+                ${kpi('صافي المالية', f(net) + ' ر.س', 'ph-scales', net >= 0 ? '#16a34a,#4ade80' : '#ef4444,#f87171')}
+                ${kpi('وحدات قيد التصنيع', inProd.length, 'ph-house-line', '#2563eb,#60a5fa')}
+                ${kpi('إجمالي الكوادر', H.length + Wk.length, 'ph-users-three', '#8b5cf6,#c4b5fd')}
+                ${kpi('أصناف تحت الحد', lowStock.length, 'ph-warning-octagon', '#ef4444,#f87171')}
+                ${kpi('بلاغات مفتوحة', openT.length, 'ph-lifebuoy', '#f59e0b,#fbbf24')}
+                ${kpi('متوسط الإنجاز', avgProg + '%', 'ph-chart-line-up', '#0891b2,#22d3ee')}
+            </div>`;
+
+            const alerts = [];
+            if (lowStock.length) alerts.push(['ph-warning-octagon', '#ef4444', `${lowStock.length} صنف تحت الحد الأدنى — يحتاج إعادة طلب`, 'warehouses']);
+            if (highT.length) alerts.push(['ph-fire', '#ef4444', `${highT.length} بلاغ عالي الأولوية مفتوح`, 'it']);
+            if (stalled.length) alerts.push(['ph-pause-circle', '#f59e0b', `${stalled.length} مشروع متوقف`, 'contracting']);
+            if (soon.length) alerts.push(['ph-clock-countdown', '#f59e0b', `${soon.length} مشروع قرب التسليم (خلال ٣٠ يومًا)`, 'contracting']);
+            if (stoppedW.length) alerts.push(['ph-user-minus', '#2563eb', `${stoppedW.length} عامل متوقف أو مغادر`, 'workers']);
+            const alertsHtml = `<div class="bg-white rounded-2xl p-5 shadow-sm border mb-6" style="border-color:rgba(142,46,58,.1)">
+                <h3 class="font-bold mb-3 flex items-center gap-2" style="color:#8E2E3A"><i class="ph ph-bell-ringing"></i> تنبيهات تحتاج إجراءً (${alerts.length})</h3>
+                ${alerts.length ? alerts.map(a => `<div class="flex items-center justify-between gap-3 p-3 rounded-xl mb-2" style="background:${a[1]}14"><div class="flex items-center gap-2"><i class="ph ${a[0]} text-xl" style="color:${a[1]}"></i><span style="color:#5a1c25;font-weight:600">${a[2]}</span></div><button onclick="gotoTab('${a[3]}')" class="text-xs px-3 py-1.5 rounded-lg text-white shrink-0" style="background:${a[1]}">معالجة</button></div>`).join('')
+                    : '<div class="text-center py-4" style="color:#16a34a"><i class="ph ph-check-circle text-3xl block mb-1"></i>كل المؤشرات ضمن المعدّل الطبيعي</div>'}
+            </div>`;
+
+            const secMeta = [
+                ['المقاولات', 'ph-buildings', 'contracting', C.length + ' مشروع'],
+                ['المصانع', 'ph-house-line', 'portables', P.length + ' وحدة'],
+                ['المخازن', 'ph-warehouse', 'warehouses', W.length + ' صنف'],
+                ['الموظفين', 'ph-users', 'hr', H.length + ' موظف'],
+                ['العمال', 'ph-hard-hat', 'workers', Wk.length + ' عامل'],
+                ['المالية', 'ph-money', 'finance', F.length + ' حركة'],
+                ['التقنية', 'ph-desktop', 'it', I.length + ' بلاغ']
+            ];
+            const secHtml = `<h3 class="font-bold mb-3 flex items-center gap-2" style="color:#8E2E3A"><i class="ph ph-squares-four"></i> حالة الأقسام (انقر للانتقال)</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
+                ${secMeta.map(s => `<button onclick="gotoTab('${s[2]}')" class="bg-white rounded-2xl p-4 shadow-sm border text-center hover:-translate-y-1 transition-all" style="border-color:rgba(142,46,58,.1)"><i class="ph ${s[1]} text-2xl" style="color:#8E2E3A"></i><p class="text-xs font-bold mt-2" style="color:#5a1c25">${s[0]}</p><p class="text-[11px]" style="color:#8E2E3A;opacity:.6">${s[3]}</p></button>`).join('')}
+            </div>`;
+
+            const chartsHtml = `<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+                <div class="bg-white rounded-2xl p-4 shadow-sm border" style="border-color:rgba(142,46,58,.1)"><h4 class="text-sm font-bold mb-2" style="color:#8E2E3A">المشاريع حسب الحالة</h4><div style="height:200px"><canvas id="ctrlC0"></canvas></div></div>
+                <div class="bg-white rounded-2xl p-4 shadow-sm border" style="border-color:rgba(142,46,58,.1)"><h4 class="text-sm font-bold mb-2" style="color:#8E2E3A">الإيراد مقابل المصروف</h4><div style="height:200px"><canvas id="ctrlC1"></canvas></div></div>
+                <div class="bg-white rounded-2xl p-4 shadow-sm border" style="border-color:rgba(142,46,58,.1)"><h4 class="text-sm font-bold mb-2" style="color:#8E2E3A">الكوادر حسب القسم</h4><div style="height:200px"><canvas id="ctrlC2"></canvas></div></div>
+            </div>`;
+
+            const actionsHtml = `<div class="bg-white rounded-2xl p-4 shadow-sm border flex flex-wrap items-center gap-2" style="border-color:rgba(142,46,58,.1)">
+                <span class="font-bold ml-auto" style="color:#8E2E3A"><i class="ph ph-lightning"></i> إجراءات سريعة</span>
+                <button onclick="backupAll()" class="px-3 py-2 rounded-lg text-sm text-white" style="background:#8E2E3A"><i class="ph ph-cloud-arrow-down"></i> نسخة احتياطية</button>
+                <button onclick="document.getElementById('restoreFile').click()" class="px-3 py-2 rounded-lg text-sm text-white" style="background:#EA7A2C"><i class="ph ph-cloud-arrow-up"></i> استعادة</button>
+                <button onclick="document.getElementById('globalSearchInput').focus()" class="px-3 py-2 rounded-lg text-sm" style="background:#F5F0EB;color:#5a1c25"><i class="ph ph-magnifying-glass"></i> بحث عام</button>
+                <button onclick="window.print()" class="px-3 py-2 rounded-lg text-sm" style="background:#F5F0EB;color:#5a1c25"><i class="ph ph-printer"></i> طباعة</button>
+            </div>`;
+
+            body.innerHTML = kpis + alertsHtml + secHtml + chartsHtml + actionsHtml;
+
+            if (typeof Chart === 'undefined') return;
+            const gc = (arr, key) => { const m = {}; arr.forEach(x => { const v = x[key] || '—'; m[v] = (m[v] || 0) + 1; }); return m; };
+            const PAL = ['#8E2E3A', '#EA7A2C', '#2563eb', '#16a34a', '#8b5cf6', '#ef4444'];
+            ['ctrlC0', 'ctrlC1', 'ctrlC2'].forEach(id => { const cv = document.getElementById(id); const ex = cv && Chart.getChart && Chart.getChart(cv); if (ex) ex.destroy(); });
+            const dough = (id, obj) => new Chart(document.getElementById(id), { type: 'doughnut', data: { labels: Object.keys(obj), datasets: [{ data: Object.values(obj), backgroundColor: PAL, borderWidth: 3, borderColor: '#fff' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Tajawal', size: 11 }, padding: 10, usePointStyle: true } } } } });
+            dough('ctrlC0', gc(C, 'status'));
+            new Chart(document.getElementById('ctrlC1'), { type: 'bar', data: { labels: ['إيرادات', 'مصروفات'], datasets: [{ data: [rev, exp], backgroundColor: ['#16a34a', '#ef4444'], borderRadius: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { font: { family: 'Tajawal' } } }, x: { ticks: { font: { family: 'Tajawal' } } } } } });
+            dough('ctrlC2', gc(H, 'dept'));
+        }
 
         computeDashboard();
         checkNotifications();
