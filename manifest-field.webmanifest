@@ -1,0 +1,17 @@
+{
+  "name": "متابعة ميدانية — روايات البناء",
+  "short_name": "متابعة ميدانية",
+  "description": "نموذج المتابعة الميدانية لتحديث نسب الإنجاز والملاحظات من الموقع.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./%D9%86%D9%85%D9%88%D8%B0%D8%AC%20%D8%A7%D9%84%D9%85%D8%AA%D8%A7%D8%A8%D8%B9%D8%A9%20%D8%A7%D9%84%D9%85%D9%8A%D8%AF%D8%A7%D9%86%D9%8A%D8%A9.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f8fafc",
+  "theme_color": "#8E2E3A",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

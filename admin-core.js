@@ -63,14 +63,14 @@
             <p class="text-gray-500 text-sm">${esc(cfg.subtitle || "")}</p>
           </div>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2 justify-end">
           <div class="flex bg-gray-100 rounded-xl p-0.5" title="نمط العرض">
             <button id="viewTable" class="px-3 py-2 rounded-lg text-sm transition" title="عرض جدول"><i class="ph ph-table"></i></button>
             <button id="viewCards" class="px-3 py-2 rounded-lg text-sm transition" title="عرض بطاقات"><i class="ph ph-squares-four"></i></button>
           </div>
           <div class="relative">
             <i class="ph ph-magnifying-glass absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-            <input id="search" placeholder="بحث فوري..." class="pr-9 pl-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm w-48 focus:outline-none focus:ring-2 focus:ring-[#EA7A2C]/30 focus:border-[#EA7A2C] transition">
+            <input id="search" placeholder="بحث فوري..." class="pr-9 pl-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm w-36 sm:w-48 focus:outline-none focus:ring-2 focus:ring-[#EA7A2C]/30 focus:border-[#EA7A2C] transition">
           </div>
           <button id="btnExport" class="px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-600 hover:border-[#8E2E3A] hover:text-[#8E2E3A] transition flex items-center gap-1.5" title="تصدير Excel/CSV"><i class="ph ph-file-csv text-lg"></i><span class="hidden sm:inline">تصدير</span></button>
           <button id="btnReset" class="px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-600 hover:border-rose-400 hover:text-rose-500 transition" title="استعادة البيانات الأصلية"><i class="ph ph-arrow-counter-clockwise text-lg"></i></button>
