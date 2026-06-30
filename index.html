@@ -8,6 +8,15 @@
     <!-- الشعار في تبويب المتصفح -->
     <link rel="icon" href="https://i.postimg.cc/sg88PV0h/5911057288288472436.jpg" type="image/jpeg">
 
+    <!-- PWA: تطبيق قابل للتثبيت على كل الأجهزة -->
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#8E2E3A">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="روايات البناء">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -474,6 +483,9 @@
             </div>
             
             <div class="flex items-center gap-3 md:gap-4">
+                <button id="installBtn" onclick="installApp()" title="تثبيت التطبيق على الجهاز" style="display:none; background:linear-gradient(135deg,#8E2E3A,#EA7A2C); color:#fff;" class="items-center gap-1.5 px-3 py-2 rounded-full text-sm font-bold transition-all hover:shadow-lg">
+                    <i class="ph ph-download-simple text-lg"></i><span class="hidden sm:inline">تثبيت التطبيق</span>
+                </button>
                 <button onclick="backupAll()" title="نسخة احتياطية لكل بيانات النظام" class="relative p-2.5 rounded-full transition-all" style="background: #F5F0EB; color: #8E2E3A;">
                     <i class="ph ph-cloud-arrow-down text-xl"></i>
                 </button>
@@ -1061,6 +1073,34 @@
             dough('ctrlC0', gc(C, 'status'));
             new Chart(document.getElementById('ctrlC1'), { type: 'bar', data: { labels: ['إيرادات', 'مصروفات'], datasets: [{ data: [rev, exp], backgroundColor: ['#16a34a', '#ef4444'], borderRadius: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { font: { family: 'Tajawal' } } }, x: { ticks: { font: { family: 'Tajawal' } } } } } });
             dough('ctrlC2', gc(H, 'dept'));
+        }
+
+        /* ============================================================
+           PWA: تثبيت التطبيق على الأجهزة + العمل دون اتصال
+           ============================================================ */
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+        }
+        let deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', e => {
+            e.preventDefault(); deferredPrompt = e;
+            const b = document.getElementById('installBtn'); if (b) b.style.display = 'inline-flex';
+        });
+        window.addEventListener('appinstalled', () => {
+            deferredPrompt = null;
+            const b = document.getElementById('installBtn'); if (b) b.style.display = 'none';
+            showMessage('تم تثبيت التطبيق على جهازك بنجاح ✅');
+        });
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.finally(() => { deferredPrompt = null; const b = document.getElementById('installBtn'); if (b) b.style.display = 'none'; });
+            } else {
+                const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+                showMessage(ios
+                    ? 'للتثبيت على آيفون/آيباد: اضغط زر المشاركة ⬆️ في سفاري ثم «إضافة إلى الشاشة الرئيسية».'
+                    : 'إن لم يظهر خيار التثبيت، افتح قائمة المتصفح (⋮) واختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».');
+            }
         }
 
         computeDashboard();
