@@ -1,11 +1,11 @@
 /* روايات البناء — Service Worker (تثبيت + عمل دون اتصال) */
-const CACHE = "rb-cache-v2";
+const CACHE = "rb-cache-v3";
 const ASSETS = [
   "./", "./index.html", "./admin-core.js", "./seed-data.js",
   "./contracting.html", "./portables.html", "./warehouses.html", "./hr.html",
   "./workers.html", "./finance.html", "./it.html", "./documents.html",
   "./نموذج المتابعة الميدانية.html",
-  "./manifest.webmanifest", "./manifest-field.webmanifest", "./icon-192.png", "./icon-512.png",
+  "./manifest.webmanifest", "./manifest-field.webmanifest", "./m-contracting.webmanifest", "./m-portables.webmanifest", "./m-warehouses.webmanifest", "./m-hr.webmanifest", "./m-workers.webmanifest", "./m-finance.webmanifest", "./m-it.webmanifest", "./m-documents.webmanifest", "./icon-192.png", "./icon-512.png",
   "./صور/5911057288288472436.jpg"
 ];
 
