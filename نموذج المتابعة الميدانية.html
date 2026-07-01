@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="متابعة ميدانية">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
+<script src="sync-config.js"></script>
 <style>
 :root {
   --bg: #f4f6f9; --panel: #ffffff; --ink: #1f2937; --muted: #6b7280;
@@ -273,6 +274,7 @@ thead tr:nth-child(2) th { top: var(--rowH); }
         <div class="sync-actions">
           <button id="btnConnectCloud" class="cloud-btn">🔗 الاتصال بـ GitHub</button>
           <button id="btnTestCloud" class="cloud-btn-outline">✅ اختبار الاتصال</button>
+          <button id="btnExportSyncCfg" class="cloud-btn-outline">💾 حفظ إعداد النظام (للمسؤول)</button>
         </div>
         <div id="syncConfigStatus" class="sync-status offline" style="display:none;"></div>
       </div>
@@ -772,6 +774,11 @@ let ghConnected = false, ghLastSha = "", __ghSaveTimer = null, __ghMonitorTimer 
 function loadGhConfig(){
   try { const r = localStorage.getItem(GH_LS_KEY); if(r){ Object.assign(ghConfig, JSON.parse(r)); } }
   catch(e){}
+  // الإعداد المركزي للنظام (sync-config.js) يتقدّم إن كان معبّأً — فلا يُدخل العاملون شيئًا
+  if(window.RB_SYNC && RB_SYNC.token && RB_SYNC.owner && RB_SYNC.repo){
+    Object.assign(ghConfig, RB_SYNC);
+    ghConfig._central = true;
+  }
 }
 function storeGhConfig(){
   try { localStorage.setItem(GH_LS_KEY, JSON.stringify(ghConfig)); } catch(e){}
@@ -916,6 +923,24 @@ $("#btnConnectCloud").onclick = async () => {
 $("#btnTestCloud").onclick = async () => {
   $("#btnConnectCloud").click();
   setTimeout(() => { ghSave(); }, 800);
+};
+// حفظ إعداد النظام المركزي كملف sync-config.js (يملؤه المسؤول ثم يرفعه مرة واحدة)
+$("#btnExportSyncCfg").onclick = () => {
+  const cfg = {
+    token:  $("#ghToken").value.trim(),
+    owner:  $("#ghOwner").value.trim(),
+    repo:   $("#ghRepo").value.trim(),
+    branch: ($("#ghBranch").value.trim() || "main"),
+    path:   ($("#ghPath").value.trim() || "data/field-tracking.json"),
+    autoSync: true
+  };
+  if(!cfg.token || !cfg.owner || !cfg.repo){ alert("يرجى تعبئة التوكن والمالك واسم المستودع أولًا."); return; }
+  const content = "/* إعداد المزامنة المركزي — روايات البناء. لا تشاركه علنًا. */\nwindow.RB_SYNC = " + JSON.stringify(cfg, null, 2) + ";\n";
+  const blob = new Blob([content], { type: "application/javascript" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "sync-config.js"; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  alert("تم تنزيل sync-config.js — ضعه مع ملفات النظام وارفعه على GitHub مرة واحدة. بعدها يتصل الجميع تلقائيًا دون إدخال بيانات.");
 };
 $("#ghAutoSync").addEventListener("change", e => {
   ghConfig.autoSync = e.target.checked;
