@@ -1,5 +1,5 @@
 /* روايات البناء — Service Worker (تثبيت + عمل دون اتصال) */
-const CACHE = "rb-cache-v4";
+const CACHE = "rb-cache-v5";
 const ASSETS = [
   "./", "./index.html", "./admin-core.js", "./seed-data.js",
   "./contracting.html", "./portables.html", "./warehouses.html", "./hr.html",

@@ -1102,6 +1102,11 @@
            ============================================================ */
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+            // تحديث تلقائي: عند تفعيل نسخة جديدة من الخدمة، أعِد التحميل مرة واحدة لعرض أحدث المزايا
+            let rbReloaded = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (rbReloaded) return; rbReloaded = true; location.reload();
+            });
         }
         let deferredPrompt = null;
         window.addEventListener('beforeinstallprompt', e => {
