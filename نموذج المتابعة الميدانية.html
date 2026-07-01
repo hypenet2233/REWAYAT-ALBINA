@@ -162,9 +162,6 @@ thead tr:nth-child(2) th { top: var(--rowH); }
   tr, td, th { break-inside: avoid; }
 }
 </style>
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
 <div class="wrap" id="captureArea">
@@ -219,15 +216,15 @@ thead tr:nth-child(2) th { top: var(--rowH); }
         ١- اكتب نسبة الإنجاز (%) بجوار البند المكتمل.<br>
         ٢- اضغط مرة واحدة على أي مربع في الشبكة لوضع علامة إنجاز (✅).<br>
         ٣- اضغط <b>مرتين متتاليتين</b> على المربع لكتابة ملاحظة نصية (مثل سبب التأخير).<br>
-        ٤- استخدم الأزرار أدناه لحفظ التحديثات وإرسالها للإدارة.
+        ٤- اضغط <b>🐙 حفظ التحديثات</b> لرفع البيانات مباشرةً إلى GitHub.
       </span>
     </div>
     <div class="worker-actions">
       <button id="btnLoad" style="background:#f8fafc; color:#0f172a; border-color:#cbd5e1;">📂 استيراد جدول الإدارة</button>
       <button id="btnWorkerImg" style="background:#2563eb; color:#fff; border-color:#2563eb;">📸 إرسال كصورة</button>
-      <button id="btnCloudSave" class="cloud-btn">☁️ حفظ في السحابة</button>
+      <button id="btnWorkerFile" class="pri" style="background:#2b2b2b; color:#fff; border-color:#2b2b2b;">🐙 حفظ التحديثات</button>
       <button id="btnCloudLoad" class="cloud-btn-outline">☁️ استيراد من السحابة</button>
-      <button id="btnWorkerFile" class="pri">💾 حفظ التحديثات</button>
+      <button id="btnLocalBackup" style="background:#f8fafc; color:#6b7280; border-color:#d1d5db;">💾 نسخة محلية</button>
       <input type="file" id="fileInput" accept=".json" style="display:none">
     </div>
   </div>
@@ -260,20 +257,20 @@ thead tr:nth-child(2) th { top: var(--rowH); }
         <button id="setImport" style="background:#eff6ff; color:#1d4ed8; border-color:#93c5fd;">📂 استيراد جدول الإدارة</button>
         <button id="setReset" style="background:#fef2f2; color:#b91c1c; border-color:#fca5a5;">↺ إعادة ضبط</button>
       </div>
-      <!-- Cloud Sync Settings -->
+      <!-- Cloud Sync Settings (GitHub) -->
       <div class="sync-card">
-        <div class="sync-card-title">☁️ مزامنة السحابة (للمتابعة من أي جهاز)</div>
-        <div class="sync-card-desc">أنشئ مشروعًا مجانيًا في <b>Firebase</b> ثم أدخل بيانات الاتصال أدناه. يمكن لمشرف المشروع فتح نفس الصفحة من أي جهاز وإدخال نفس "كود المشروع" ليرى التحديثات فورًا.</div>
+        <div class="sync-card-title">🐙 مزامنة عبر GitHub (مستودع المشروع)</div>
+        <div class="sync-card-desc">بما أن مشروعك في مستودع <b>GitHub</b>، يمكن حفظ التحديثات مباشرة فيه. أنشئ <b>Personal Access Token</b> من GitHub → Settings → Developer settings → Tokens (classic) → امنح صلاحية <code>repo</code>. ثم أدخل بيانات المستودع أدناه.</div>
         <div class="settings-grid" style="margin-top:8px;">
-          <label class="sync-field"><label>كود المشروع (مشترك بين جميع الأجهزة)</label><input type="text" id="cloudProjectCode" placeholder="مثال: project-85-riyadh"></label>
-          <label class="sync-field"><label>API Key (من Firebase)</label><input type="text" id="cloudApiKey" placeholder="AIzaSy..."></label>
-          <label class="sync-field"><label>Database URL (من Firebase)</label><input type="text" id="cloudDbUrl" placeholder="https://...firebaseio.com"></label>
-          <label class="sync-field"><label>Project ID (من Firebase)</label><input type="text" id="cloudProjectId" placeholder="my-project-id"></label>
-          <label class="fld chk"><input type="checkbox" id="cloudAutoSync"><span>مزامنة تلقائية عند كل تعديل</span></label>
-          <label class="fld chk"><input type="checkbox" id="cloudListen"><span>استقبال التحديثات فوراً (real-time)</span></label>
+          <label class="sync-field"><label>GitHub Token (Personal Access Token)</label><input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxxx"></label>
+          <label class="sync-field"><label>اسم المالك (Owner)</label><input type="text" id="ghOwner" placeholder="مثال: username أو org-name"></label>
+          <label class="sync-field"><label>اسم المستودع (Repository)</label><input type="text" id="ghRepo" placeholder="مثال: project-tracking"></label>
+          <label class="sync-field"><label>الفرع (Branch)</label><input type="text" id="ghBranch" placeholder="main"></label>
+          <label class="sync-field"><label>مسار الملف في المستودع</label><input type="text" id="ghPath" placeholder="مثال: data/field-tracking.json"></label>
+          <label class="fld chk"><input type="checkbox" id="ghAutoSync"><span>مزامنة تلقائية عند كل تعديل</span></label>
         </div>
         <div class="sync-actions">
-          <button id="btnConnectCloud" class="cloud-btn">🔗 الاتصال بالسحابة</button>
+          <button id="btnConnectCloud" class="cloud-btn">🔗 الاتصال بـ GitHub</button>
           <button id="btnTestCloud" class="cloud-btn-outline">✅ اختبار الاتصال</button>
         </div>
         <div id="syncConfigStatus" class="sync-status offline" style="display:none;"></div>
@@ -581,10 +578,12 @@ function downloadJSON(name, content) {
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
-$("#btnWorkerFile").onclick = () => {
+$("#btnWorkerFile").onclick = ghSave;
+$("#btnLocalBackup").onclick = () => {
     const today = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
     downloadJSON(`تحديث_الموقع_${today}.json`, JSON.stringify(state, null, 2));
 };
+$("#btnCloudLoad").onclick = ghLoad;
 
 // تصدير كصورة باستخدام Html2Canvas
 $("#btnWorkerImg").onclick = () => {
@@ -662,7 +661,7 @@ function fillSettings(){
   $("#setStart").value = state.startDate || "";
   $("#setFri").checked = !!state.fridayOff;
   if(!$("#setFileName").value) $("#setFileName").value = (state.title || "جدول-المشروع").replace(/\s+/g, '-');
-  fillCloudSettings();
+  fillGhSettings();
 }
 
 $("#setTitle").addEventListener("input", e => { state.title = e.target.value; $("#pTitle").textContent = e.target.value; save(); });
@@ -751,43 +750,30 @@ function updateProgressBar(){
   if(lgAvg) lgAvg.textContent = p.avgProg + "%";
 }
 
-/* ====================== مزامنة السحابة (Firebase) ====================== */
-let firebaseApp = null, firebaseDb = null, cloudRef = null, cloudUnsub = null;
+/* ====================== مزامنة عبر GitHub (Contents API) ====================== */
+const GH_LS_KEY = "tamani_github_config";
+let ghConfig = { token:"", owner:"", repo:"", branch:"main", path:"data/field-tracking.json", autoSync:false };
+let ghConnected = false, ghLastSha = "";
 
-const CLOUD_LS_KEY = "tamani_cloud_config";
-let cloudConfig = { code:"", apiKey:"", dbUrl:"", projectId:"", autoSync:false, listen:false };
-
-function loadCloudConfig(){
-  try { const r = localStorage.getItem(CLOUD_LS_KEY); if(r){ Object.assign(cloudConfig, JSON.parse(r)); } }
+function loadGhConfig(){
+  try { const r = localStorage.getItem(GH_LS_KEY); if(r){ Object.assign(ghConfig, JSON.parse(r)); } }
   catch(e){}
 }
-function storeCloudConfig(){
-  try { localStorage.setItem(CLOUD_LS_KEY, JSON.stringify(cloudConfig)); } catch(e){}
+function storeGhConfig(){
+  try { localStorage.setItem(GH_LS_KEY, JSON.stringify(ghConfig)); } catch(e){}
 }
 
-function initFirebase(){
-  if(typeof firebase === "undefined"){ return false; }
-  if(firebaseApp) return true;
-  if(!cloudConfig.apiKey || !cloudConfig.dbUrl || !cloudConfig.projectId) return false;
-  try {
-    firebaseApp = firebase.initializeApp({
-      apiKey: cloudConfig.apiKey,
-      databaseURL: cloudConfig.dbUrl,
-      projectId: cloudConfig.projectId,
-      authDomain: cloudConfig.projectId + ".firebaseapp.com",
-      storageBucket: cloudConfig.projectId + ".appspot.com",
-      messagingSenderId: "",
-      appId: ""
-    });
-    firebaseDb = firebase.database();
-    return true;
-  } catch(e){ console.error("Firebase init error:", e); return false; }
+function ghApiUrl(){
+  if(!ghConfig.owner || !ghConfig.repo || !ghConfig.path) return null;
+  const path = ghConfig.path.replace(/^\//, "");
+  return `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/${encodeURIComponent(path)}`;
 }
 
-function getCloudRef(){
-  if(!firebaseDb || !cloudConfig.code) return null;
-  const safeCode = String(cloudConfig.code).replace(/[^a-zA-Z0-9_-]/g, "-").substring(0, 64);
-  return firebaseDb.ref("projects/" + safeCode + "/state");
+function b64EncodeUnicode(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+function b64DecodeUnicode(str) {
+  return decodeURIComponent(escape(atob(str.replace(/\s/g, ""))));
 }
 
 function showSyncStatus(cls, msg){
@@ -801,105 +787,116 @@ function showSyncStatus(cls, msg){
   if(box2){ box2.style.display = "flex"; box2.className = "sync-status " + cls; box2.textContent = msg; }
 }
 
-function cloudSave(){
-  if(!initFirebase()){ alert("يرجى إعداد الاتصال بالسحابة أولاً من تبويب الإعدادات."); return; }
-  const ref = getCloudRef(); if(!ref){ alert("يرجى إدخال كود المشروع."); return; }
+async function ghTestConnection(){
+  if(!ghConfig.token || !ghConfig.owner || !ghConfig.repo){
+    alert("يرجى ملء جميع حقول الاتصال (Token, Owner, Repository)."); return false;
+  }
+  const url = ghApiUrl(); if(!url) return false;
+  showSyncStatus("pending", "⏳ جاري اختبار الاتصال بـ GitHub...");
+  try {
+    const res = await fetch(url + "?ref=" + encodeURIComponent(ghConfig.branch), {
+      headers: { "Authorization": "token " + ghConfig.token, "Accept": "application/vnd.github.v3+json" }
+    });
+    if(res.status === 401){ showSyncStatus("offline", "⚠️ رفض الوصول — تأكد من صحة التوكن"); return false; }
+    if(res.status === 404){ showSyncStatus("online", "🐙 متصل بالمستودع — الملف غير موجود (سينشأ عند الحفظ)"); ghConnected = true; ghLastSha = ""; return true; }
+    if(!res.ok){ showSyncStatus("offline", "⚠️ خطأ HTTP " + res.status); return false; }
+    const data = await res.json();
+    ghConnected = true; ghLastSha = data.sha || "";
+    showSyncStatus("online", "🐙 متصل — الملف موجود في المستودع");
+    return true;
+  } catch(err) {
+    showSyncStatus("offline", "⚠️ فشل الاتصال: " + (err.message || "خطأ شبكة")); return false;
+  }
+}
+
+async function ghSave(){
+  if(!ghConnected && !(await ghTestConnection())){ alert("يرجى الاتصال بـ GitHub أولاً من تبويب الإعدادات."); return; }
+  const url = ghApiUrl(); if(!url) return;
   const payload = JSON.parse(JSON.stringify(state));
   payload._updatedAt = Date.now();
   payload._updatedBy = navigator.userAgent.substring(0, 50);
-  ref.set(payload).then(() => {
-    showSyncStatus("online", "☁️ تم الحفظ في السحابة بنجاح — " + new Date().toLocaleTimeString('ar-SA'));
-  }).catch(err => {
+  const content = b64EncodeUnicode(JSON.stringify(payload, null, 2));
+  const body = { message: "تحديث متابعة ميدانية — " + new Date().toLocaleString('ar-SA'), content: content, branch: ghConfig.branch };
+  if(ghLastSha) body.sha = ghLastSha;
+  showSyncStatus("pending", "⏳ جاري الحفظ في GitHub...");
+  try {
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: { "Authorization": "token " + ghConfig.token, "Accept": "application/vnd.github.v3+json", "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    ghLastSha = data.content.sha;
+    showSyncStatus("online", "🐙 تم الحفظ في GitHub بنجاح — " + new Date().toLocaleTimeString('ar-SA'));
+  } catch(err) {
     showSyncStatus("offline", "⚠️ فشل الحفظ: " + (err.message || "خطأ في الاتصال"));
-  });
+  }
 }
 
-function cloudLoad(){
-  if(!initFirebase()){ alert("يرجى إعداد الاتصال بالسحابة أولاً من تبويب الإعدادات."); return; }
-  const ref = getCloudRef(); if(!ref){ alert("يرجى إدخال كود المشروع."); return; }
-  showSyncStatus("pending", "⏳ جاري استيراد البيانات...");
-  ref.once("value").then(snap => {
-    const val = snap.val();
-    if(!val){ alert("لا توجد بيانات محفوظة لهذا المشروع في السحابة."); showSyncStatus("offline", "لا توجد بيانات في السحابة"); return; }
+async function ghLoad(){
+  if(!ghConnected && !(await ghTestConnection())){ alert("يرجى الاتصال بـ GitHub أولاً من تبويب الإعدادات."); return; }
+  const url = ghApiUrl(); if(!url) return;
+  showSyncStatus("pending", "⏳ جاري استيراد البيانات من GitHub...");
+  try {
+    const res = await fetch(url + "?ref=" + encodeURIComponent(ghConfig.branch), {
+      headers: { "Authorization": "token " + ghConfig.token, "Accept": "application/vnd.github.v3+json" }
+    });
+    if(res.status === 404){ alert("لا يوجد ملف محفوظ في المستودع بعد. احفظ أولاً."); showSyncStatus("offline", "الملف غير موجود في GitHub"); return; }
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    const decoded = b64DecodeUnicode(data.content);
+    const val = JSON.parse(decoded);
+    ghLastSha = data.sha || "";
     if(val.title !== undefined) state = val;
     else if(val.tasks) Object.assign(state, val);
     save(); render(); fillSettings();
-    showSyncStatus("online", "☁️ تم استيراد البيانات من السحابة بنجاح — " + new Date().toLocaleTimeString('ar-SA'));
-  }).catch(err => {
+    showSyncStatus("online", "🐙 تم استيراد البيانات من GitHub بنجاح — " + new Date().toLocaleTimeString('ar-SA'));
+  } catch(err) {
     showSyncStatus("offline", "⚠️ فشل الاستيراد: " + (err.message || "خطأ في الاتصال"));
-  });
-}
-
-function startRealtimeListener(){
-  if(cloudUnsub){ cloudUnsub(); cloudUnsub = null; }
-  if(!initFirebase()) return;
-  const ref = getCloudRef(); if(!ref) return;
-  showSyncStatus("online", "☁️ متصل — استقبال التحديثات فوراً");
-  cloudUnsub = ref.on("value", snap => {
-    const val = snap.val(); if(!val) return;
-    if(val._updatedAt && state._lastLoaded && val._updatedAt <= state._lastLoaded) return;
-    if(confirm("تم استقبال تحديثات جديدة من السحابة. هل تريد تحديث الصفحة؟")){
-      state = val; state._lastLoaded = Date.now(); save(); render(); fillSettings();
-      showSyncStatus("online", "☁️ تم تحديث البيانات من السحابة");
-    }
-  }, err => {
-    showSyncStatus("offline", "⚠️ فقدان الاتصال بالسحابة");
-  });
-}
-
-function autoCloudSave(){
-  if(cloudConfig.autoSync && firebaseDb && cloudConfig.code){
-    cloudSave();
   }
 }
 
-function fillCloudSettings(){
-  $("#cloudProjectCode").value = cloudConfig.code || "";
-  $("#cloudApiKey").value = cloudConfig.apiKey || "";
-  $("#cloudDbUrl").value = cloudConfig.dbUrl || "";
-  $("#cloudProjectId").value = cloudConfig.projectId || "";
-  $("#cloudAutoSync").checked = !!cloudConfig.autoSync;
-  $("#cloudListen").checked = !!cloudConfig.listen;
-  if(firebaseDb && cloudConfig.code){
-    showSyncStatus("online", "☁️ متصل بمشروع: " + cloudConfig.code);
-  }
+function ghAutoSave(){
+  if(ghConfig.autoSync && ghConnected){ ghSave(); }
+}
+
+function fillGhSettings(){
+  $("#ghToken").value = ghConfig.token || "";
+  $("#ghOwner").value = ghConfig.owner || "";
+  $("#ghRepo").value = ghConfig.repo || "";
+  $("#ghBranch").value = ghConfig.branch || "main";
+  $("#ghPath").value = ghConfig.path || "data/field-tracking.json";
+  $("#ghAutoSync").checked = !!ghConfig.autoSync;
+  if(ghConnected){ showSyncStatus("online", "🐙 متصل — " + ghConfig.owner + "/" + ghConfig.repo); }
 }
 
 // Cloud events
-$("#btnCloudSave").onclick = cloudSave;
-$("#btnCloudLoad").onclick = cloudLoad;
-$("#btnConnectCloud").onclick = () => {
-  cloudConfig.code = $("#cloudProjectCode").value.trim();
-  cloudConfig.apiKey = $("#cloudApiKey").value.trim();
-  cloudConfig.dbUrl = $("#cloudDbUrl").value.trim();
-  cloudConfig.projectId = $("#cloudProjectId").value.trim();
-  storeCloudConfig();
-  if(!cloudConfig.apiKey || !cloudConfig.dbUrl || !cloudConfig.projectId){
-    alert("يرجى ملء جميع حقول الاتصال (API Key, Database URL, Project ID)."); return;
-  }
-  if(initFirebase()){
-    showSyncStatus("online", "☁️ تم الاتصال بنجاح — مشروع: " + (cloudConfig.code || "غير محدد"));
-    if(cloudConfig.listen) startRealtimeListener();
-  } else {
-    showSyncStatus("offline", "⚠️ فشل الاتصال — تأكد من صحة بيانات Firebase");
-  }
+$("#btnCloudLoad").onclick = ghLoad;
+$("#btnConnectCloud").onclick = async () => {
+  ghConfig.token = $("#ghToken").value.trim();
+  ghConfig.owner = $("#ghOwner").value.trim();
+  ghConfig.repo = $("#ghRepo").value.trim();
+  ghConfig.branch = $("#ghBranch").value.trim() || "main";
+  ghConfig.path = $("#ghPath").value.trim() || "data/field-tracking.json";
+  storeGhConfig();
+  await ghTestConnection();
 };
-$("#btnTestCloud").onclick = () => {
+$("#btnTestCloud").onclick = async () => {
   $("#btnConnectCloud").click();
-  setTimeout(() => { cloudSave(); }, 500);
+  setTimeout(() => { ghSave(); }, 800);
 };
-$("#cloudAutoSync").addEventListener("change", e => { cloudConfig.autoSync = e.target.checked; storeCloudConfig(); });
-$("#cloudListen").addEventListener("change", e => { cloudConfig.listen = e.target.checked; storeCloudConfig(); if(e.target.checked) startRealtimeListener(); else if(cloudUnsub){ cloudUnsub(); cloudUnsub = null; } });
+$("#ghAutoSync").addEventListener("change", e => { ghConfig.autoSync = e.target.checked; storeGhConfig(); });
 
 // Hook auto-save into existing save
 const originalSave = save;
 save = function(){
   originalSave();
-  autoCloudSave();
+  ghAutoSave();
 };
 
 /* تشغيل العرض لأول مرة */
-loadCloudConfig();
+loadGhConfig();
 render();
 </script>
 <script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){})}</script>

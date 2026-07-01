@@ -1,0 +1,148 @@
+/* ====================== مزامنة عبر GitHub (Contents API) ====================== */
+const GH_LS_KEY = "tamani_github_config";
+let ghConfig = { token:"", owner:"", repo:"", branch:"main", path:"data/field-tracking.json", autoSync:false };
+let ghConnected = false, ghLastSha = "";
+
+function loadGhConfig(){
+  try { const r = localStorage.getItem(GH_LS_KEY); if(r){ Object.assign(ghConfig, JSON.parse(r)); } }
+  catch(e){}
+}
+function storeGhConfig(){
+  try { localStorage.setItem(GH_LS_KEY, JSON.stringify(ghConfig)); } catch(e){}
+}
+
+function ghApiUrl(){
+  if(!ghConfig.owner || !ghConfig.repo || !ghConfig.path) return null;
+  const path = ghConfig.path.replace(/^\//, "");
+  return `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/${encodeURIComponent(path)}`;
+}
+
+function b64EncodeUnicode(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+function b64DecodeUnicode(str) {
+  return decodeURIComponent(escape(atob(str.replace(/\s/g, ""))));
+}
+
+function showSyncStatus(cls, msg){
+  const box = $("#syncStatus"); const dot = $("#syncDot"); const txt = $("#syncMsg");
+  const box2 = $("#syncConfigStatus");
+  if(!box) return;
+  box.style.display = "flex";
+  if(dot) { dot.className = "sync-dot " + (cls === "online" ? "on" : "off"); }
+  if(txt) txt.textContent = msg;
+  box.className = "sync-status " + cls;
+  if(box2){ box2.style.display = "flex"; box2.className = "sync-status " + cls; box2.textContent = msg; }
+}
+
+async function ghTestConnection(){
+  if(!ghConfig.token || !ghConfig.owner || !ghConfig.repo){
+    alert("يرجى ملء جميع حقول الاتصال (Token, Owner, Repository)."); return false;
+  }
+  const url = ghApiUrl(); if(!url) return false;
+  showSyncStatus("pending", "⏳ جاري اختبار الاتصال بـ GitHub...");
+  try {
+    const res = await fetch(url + "?ref=" + encodeURIComponent(ghConfig.branch), {
+      headers: { "Authorization": "token " + ghConfig.token, "Accept": "application/vnd.github.v3+json" }
+    });
+    if(res.status === 401){ showSyncStatus("offline", "⚠️ رفض الوصول — تأكد من صحة التوكن"); return false; }
+    if(res.status === 404){ showSyncStatus("online", "🐙 متصل بالمستودع — الملف غير موجود (سينشأ عند الحفظ)"); ghConnected = true; ghLastSha = ""; return true; }
+    if(!res.ok){ showSyncStatus("offline", "⚠️ خطأ HTTP " + res.status); return false; }
+    const data = await res.json();
+    ghConnected = true; ghLastSha = data.sha || "";
+    showSyncStatus("online", "🐙 متصل — الملف موجود في المستودع");
+    return true;
+  } catch(err) {
+    showSyncStatus("offline", "⚠️ فشل الاتصال: " + (err.message || "خطأ شبكة")); return false;
+  }
+}
+
+async function ghSave(){
+  if(!ghConnected && !(await ghTestConnection())){ alert("يرجى الاتصال بـ GitHub أولاً من تبويب الإعدادات."); return; }
+  const url = ghApiUrl(); if(!url) return;
+  const payload = JSON.parse(JSON.stringify(state));
+  payload._updatedAt = Date.now();
+  payload._updatedBy = navigator.userAgent.substring(0, 50);
+  const content = b64EncodeUnicode(JSON.stringify(payload, null, 2));
+  const body = { message: "تحديث متابعة ميدانية — " + new Date().toLocaleString('ar-SA'), content: content, branch: ghConfig.branch };
+  if(ghLastSha) body.sha = ghLastSha;
+  showSyncStatus("pending", "⏳ جاري الحفظ في GitHub...");
+  try {
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: { "Authorization": "token " + ghConfig.token, "Accept": "application/vnd.github.v3+json", "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    ghLastSha = data.content.sha;
+    showSyncStatus("online", "🐙 تم الحفظ في GitHub بنجاح — " + new Date().toLocaleTimeString('ar-SA'));
+  } catch(err) {
+    showSyncStatus("offline", "⚠️ فشل الحفظ: " + (err.message || "خطأ في الاتصال"));
+  }
+}
+
+async function ghLoad(){
+  if(!ghConnected && !(await ghTestConnection())){ alert("يرجى الاتصال بـ GitHub أولاً من تبويب الإعدادات."); return; }
+  const url = ghApiUrl(); if(!url) return;
+  showSyncStatus("pending", "⏳ جاري استيراد البيانات من GitHub...");
+  try {
+    const res = await fetch(url + "?ref=" + encodeURIComponent(ghConfig.branch), {
+      headers: { "Authorization": "token " + ghConfig.token, "Accept": "application/vnd.github.v3+json" }
+    });
+    if(res.status === 404){ alert("لا يوجد ملف محفوظ في المستودع بعد. احفظ أولاً."); showSyncStatus("offline", "الملف غير موجود في GitHub"); return; }
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    const decoded = b64DecodeUnicode(data.content);
+    const val = JSON.parse(decoded);
+    ghLastSha = data.sha || "";
+    if(val.title !== undefined) state = val;
+    else if(val.tasks) Object.assign(state, val);
+    save(); render(); fillSettings();
+    showSyncStatus("online", "🐙 تم استيراد البيانات من GitHub بنجاح — " + new Date().toLocaleTimeString('ar-SA'));
+  } catch(err) {
+    showSyncStatus("offline", "⚠️ فشل الاستيراد: " + (err.message || "خطأ في الاتصال"));
+  }
+}
+
+function ghAutoSave(){
+  if(ghConfig.autoSync && ghConnected){ ghSave(); }
+}
+
+function fillGhSettings(){
+  $("#ghToken").value = ghConfig.token || "";
+  $("#ghOwner").value = ghConfig.owner || "";
+  $("#ghRepo").value = ghConfig.repo || "";
+  $("#ghBranch").value = ghConfig.branch || "main";
+  $("#ghPath").value = ghConfig.path || "data/field-tracking.json";
+  $("#ghAutoSync").checked = !!ghConfig.autoSync;
+  if(ghConnected){ showSyncStatus("online", "🐙 متصل — " + ghConfig.owner + "/" + ghConfig.repo); }
+}
+
+// Cloud events
+$("#btnCloudSave").onclick = ghSave;
+$("#btnCloudLoad").onclick = ghLoad;
+$("#btnConnectCloud").onclick = async () => {
+  ghConfig.token = $("#ghToken").value.trim();
+  ghConfig.owner = $("#ghOwner").value.trim();
+  ghConfig.repo = $("#ghRepo").value.trim();
+  ghConfig.branch = $("#ghBranch").value.trim() || "main";
+  ghConfig.path = $("#ghPath").value.trim() || "data/field-tracking.json";
+  storeGhConfig();
+  await ghTestConnection();
+};
+$("#btnTestCloud").onclick = async () => {
+  $("#btnConnectCloud").click();
+  setTimeout(() => { ghSave(); }, 800);
+};
+$("#ghAutoSync").addEventListener("change", e => { ghConfig.autoSync = e.target.checked; storeGhConfig(); });
+
+// Hook auto-save into existing save
+const originalSave = save;
+save = function(){
+  originalSave();
+  ghAutoSave();
+};
+
+/* تشغيل العرض لأول مرة */
+loadGhConfig();
