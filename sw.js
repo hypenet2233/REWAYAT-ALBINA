@@ -27,12 +27,15 @@ self.addEventListener("activate", e => {
   );
 });
 
-// الجلب: شبكة أولًا (لأحدث بيانات) مع الرجوع للكاش عند انقطاع الاتصال
+// الجلب: شبكة أولًا مع تجاوز كاش المتصفح لملفات الموقع (ضمان أحدث نسخة دائمًا)،
+// والرجوع للكاش المخزّن فقط عند انقطاع الاتصال.
 self.addEventListener("fetch", e => {
   const req = e.request;
   if (req.method !== "GET") return;
+  const sameOrigin = new URL(req.url).origin === self.location.origin;
+  const fresh = sameOrigin ? fetch(req, { cache: "reload" }) : fetch(req);
   e.respondWith(
-    fetch(req)
+    fresh
       .then(res => {
         const copy = res.clone();
         caches.open(CACHE).then(c => c.put(req, copy)).catch(() => {});
