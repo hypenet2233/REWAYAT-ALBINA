@@ -1063,7 +1063,25 @@
                 <button onclick="window.print()" class="px-3 py-2 rounded-lg text-sm" style="background:#F5F0EB;color:#5a1c25"><i class="ph ph-printer"></i> طباعة</button>
             </div>`;
 
-            body.innerHTML = kpis + alertsHtml + secHtml + chartsHtml + actionsHtml;
+            const links = [
+                ['نموذج المتابعة الميدانية.html', 'المتابعة الميدانية', 'ph-clipboard-text'],
+                ['contracting.html', 'المقاولات', 'ph-buildings'],
+                ['portables.html', 'المصانع', 'ph-house-line'],
+                ['warehouses.html', 'المخازن', 'ph-warehouse'],
+                ['hr.html', 'الموظفين', 'ph-users'],
+                ['workers.html', 'العمال', 'ph-hard-hat'],
+                ['finance.html', 'المالية', 'ph-money'],
+                ['it.html', 'التقنية', 'ph-desktop'],
+                ['documents.html', 'المستندات', 'ph-files']
+            ];
+            const linksHtml = `<div class="bg-white rounded-2xl p-5 shadow-sm border mt-6" style="border-color:rgba(142,46,58,.1)">
+                <h3 class="font-bold mb-1 flex items-center gap-2" style="color:#8E2E3A"><i class="ph ph-link-simple"></i> روابط مباشرة — فتح وتثبيت كل قسم منفردًا</h3>
+                <p class="text-xs mb-3" style="color:#8E2E3A;opacity:.65">افتح أي قسم في نافذة مستقلة، ثم ثبّته من قائمة المتصفح (⋮ ← تثبيت التطبيق / إضافة إلى الشاشة الرئيسية) كتطبيق قائم بذاته على أي جهاز.</p>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+                    ${links.map(l => `<a href="${encodeURI(l[0])}" target="_blank" rel="noopener" class="flex items-center justify-between gap-2 p-2.5 rounded-xl border hover:-translate-y-0.5 transition-all" style="border-color:rgba(142,46,58,.15);color:#5a1c25"><span class="flex items-center gap-2 text-sm font-bold"><i class="ph ${l[2]}" style="color:#8E2E3A"></i> ${l[1]}</span><i class="ph ph-arrow-square-out" style="color:#EA7A2C"></i></a>`).join('')}
+                </div>
+            </div>`;
+            body.innerHTML = kpis + alertsHtml + secHtml + chartsHtml + actionsHtml + linksHtml;
 
             if (typeof Chart === 'undefined') return;
             const gc = (arr, key) => { const m = {}; arr.forEach(x => { const v = x[key] || '—'; m[v] = (m[v] || 0) + 1; }); return m; };
