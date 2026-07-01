@@ -267,7 +267,8 @@ thead tr:nth-child(2) th { top: var(--rowH); }
           <label class="sync-field"><label>اسم المستودع (Repository)</label><input type="text" id="ghRepo" placeholder="مثال: project-tracking"></label>
           <label class="sync-field"><label>الفرع (Branch)</label><input type="text" id="ghBranch" placeholder="main"></label>
           <label class="sync-field"><label>مسار الملف في المستودع</label><input type="text" id="ghPath" placeholder="مثال: data/field-tracking.json"></label>
-          <label class="fld chk"><input type="checkbox" id="ghAutoSync"><span>مزامنة تلقائية عند كل تعديل</span></label>
+          <label class="fld chk"><input type="checkbox" id="ghAutoSync"><span>🔄 رفع تلقائي عند كل تعديل (وضع العامل)</span></label>
+          <label class="fld chk"><input type="checkbox" id="ghAutoRefresh"><span>👁️ المراقبة المباشرة — تحديث تلقائي كل 15 ثانية (وضع المشرف)</span></label>
         </div>
         <div class="sync-actions">
           <button id="btnConnectCloud" class="cloud-btn">🔗 الاتصال بـ GitHub</button>
@@ -765,8 +766,8 @@ function updateProgressBar(){
 
 /* ====================== مزامنة عبر GitHub (Contents API) ====================== */
 const GH_LS_KEY = "tamani_github_config";
-let ghConfig = { token:"", owner:"", repo:"", branch:"main", path:"data/field-tracking.json", autoSync:false };
-let ghConnected = false, ghLastSha = "";
+let ghConfig = { token:"", owner:"", repo:"", branch:"main", path:"data/field-tracking.json", autoSync:false, autoRefresh:false };
+let ghConnected = false, ghLastSha = "", __ghSaveTimer = null, __ghMonitorTimer = null;
 
 function loadGhConfig(){
   try { const r = localStorage.getItem(GH_LS_KEY); if(r){ Object.assign(ghConfig, JSON.parse(r)); } }
@@ -877,8 +878,18 @@ async function ghLoad(){
 }
 
 function ghAutoSave(){
-  if(ghConfig.autoSync && ghConnected){ ghSave(); }
+  // رفع مكبوح: بعد 3 ثوانٍ من آخر تعديل (يتفادى إنشاء التزام لكل ضغطة)
+  if(!(ghConfig.autoSync && ghConnected)) return;
+  clearTimeout(__ghSaveTimer);
+  __ghSaveTimer = setTimeout(() => ghSave(), 3000);
 }
+// وضع المراقبة: استيراد دوري تلقائي للمشرف
+function startMonitor(){
+  if(__ghMonitorTimer) return;
+  ghLoad();
+  __ghMonitorTimer = setInterval(() => { if(ghConnected) ghLoad(); }, 15000);
+}
+function stopMonitor(){ if(__ghMonitorTimer){ clearInterval(__ghMonitorTimer); __ghMonitorTimer = null; } }
 
 function fillGhSettings(){
   $("#ghToken").value = ghConfig.token || "";
@@ -887,6 +898,7 @@ function fillGhSettings(){
   $("#ghBranch").value = ghConfig.branch || "main";
   $("#ghPath").value = ghConfig.path || "data/field-tracking.json";
   $("#ghAutoSync").checked = !!ghConfig.autoSync;
+  if($("#ghAutoRefresh")) $("#ghAutoRefresh").checked = !!ghConfig.autoRefresh;
   if(ghConnected){ showSyncStatus("online", "🐙 متصل — " + ghConfig.owner + "/" + ghConfig.repo); }
 }
 
@@ -905,7 +917,18 @@ $("#btnTestCloud").onclick = async () => {
   $("#btnConnectCloud").click();
   setTimeout(() => { ghSave(); }, 800);
 };
-$("#ghAutoSync").addEventListener("change", e => { ghConfig.autoSync = e.target.checked; storeGhConfig(); });
+$("#ghAutoSync").addEventListener("change", e => {
+  ghConfig.autoSync = e.target.checked;
+  if(ghConfig.autoSync){ ghConfig.autoRefresh = false; if($("#ghAutoRefresh")) $("#ghAutoRefresh").checked = false; stopMonitor(); }
+  storeGhConfig();
+});
+if($("#ghAutoRefresh")) $("#ghAutoRefresh").addEventListener("change", async e => {
+  ghConfig.autoRefresh = e.target.checked;
+  if(ghConfig.autoRefresh){ ghConfig.autoSync = false; $("#ghAutoSync").checked = false; storeGhConfig();
+    if(!ghConnected) await ghAutoConnect();
+    if(ghConnected) startMonitor(); else showSyncStatus("offline", "⚠️ فعّل الاتصال بـ GitHub أولًا لتشغيل المراقبة");
+  } else { stopMonitor(); storeGhConfig(); }
+});
 
 // Hook auto-save into existing save
 const originalSave = save;
@@ -915,8 +938,13 @@ save = function(){
 };
 
 /* تشغيل العرض لأول مرة */
-loadGhConfig();
 render();
+loadGhConfig();
+// اتصال تلقائي بالإعداد المحفوظ، ثم تشغيل المراقبة/التحديث للمشرف تلقائيًا
+ghAutoConnect().then(() => {
+  fillGhSettings();
+  if(ghConfig.autoRefresh && ghConnected) startMonitor();
+}).catch(() => {});
 </script>
 <script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){})}</script>
 </body>
