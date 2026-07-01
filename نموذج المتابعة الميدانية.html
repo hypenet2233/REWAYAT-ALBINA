@@ -216,12 +216,13 @@ thead tr:nth-child(2) th { top: var(--rowH); }
         ١- اكتب نسبة الإنجاز (%) بجوار البند المكتمل.<br>
         ٢- اضغط مرة واحدة على أي مربع في الشبكة لوضع علامة إنجاز (✅).<br>
         ٣- اضغط <b>مرتين متتاليتين</b> على المربع لكتابة ملاحظة نصية (مثل سبب التأخير).<br>
-        ٤- اضغط <b>🐙 حفظ التحديثات</b> لرفع البيانات مباشرةً إلى GitHub.
+        ٤- اضغط <b>🐙 حفظ التحديثات</b> لرفع البيانات إلى GitHub.<br>
+        ٥- اضغط <b>📄 تصدير PDF</b> لإنشاء تقرير للطباعة أو الإرسال.
       </span>
     </div>
     <div class="worker-actions">
       <button id="btnLoad" style="background:#f8fafc; color:#0f172a; border-color:#cbd5e1;">📂 استيراد جدول الإدارة</button>
-      <button id="btnWorkerImg" style="background:#2563eb; color:#fff; border-color:#2563eb;">📸 إرسال كصورة</button>
+      <button id="btnExportPDF" style="background:#dc2626; color:#fff; border-color:#dc2626;">📄 تصدير PDF (A4 أفقي)</button>
       <button id="btnWorkerFile" class="pri" style="background:#2b2b2b; color:#fff; border-color:#2b2b2b;">🐙 حفظ التحديثات</button>
       <button id="btnCloudLoad" class="cloud-btn-outline">☁️ استيراد من السحابة</button>
       <button id="btnLocalBackup" style="background:#f8fafc; color:#6b7280; border-color:#d1d5db;">💾 نسخة محلية</button>
@@ -585,51 +586,64 @@ $("#btnLocalBackup").onclick = () => {
 };
 $("#btnCloudLoad").onclick = ghLoad;
 
-// تصدير كصورة باستخدام Html2Canvas
-$("#btnWorkerImg").onclick = () => {
-  const btn = $("#btnWorkerImg");
-  const originalText = btn.innerHTML;
-  btn.innerHTML = "⏳ جاري التجهيز...";
-  btn.disabled = true;
-
-  if (typeof html2canvas === 'undefined') {
-    const script = document.createElement('script');
-    script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
-    script.onload = () => executeImageExport(btn, originalText);
-    script.onerror = () => {
-      alert("تعذر تحميل أداة الصورة، يرجى التأكد من اتصالك بالإنترنت لهذه العملية فقط.");
-      btn.innerHTML = originalText;
-      btn.disabled = false;
-    };
-    document.head.appendChild(script);
-  } else {
-    executeImageExport(btn, originalText);
-  }
-};
-
-function executeImageExport(btn, originalText) {
-  const board = document.querySelector('.board');
-  const oldMaxHeight = board.style.maxHeight;
-  board.style.maxHeight = 'none'; // فك تقييد الطول لتصوير الجدول كاملاً
-
-  html2canvas(document.getElementById('captureArea'), {
-    scale: 2, 
-    backgroundColor: getComputedStyle(document.body).backgroundColor
-  }).then(canvas => {
-    board.style.maxHeight = oldMaxHeight; 
-    const link = document.createElement('a');
-    const today = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
-    link.download = `تقرير_الموقع_${today}.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-  }).catch(err => {
-    alert("حدث خطأ أثناء حفظ الصورة.");
-    console.error(err);
-  }).finally(() => {
-    btn.innerHTML = originalText;
-    btn.disabled = false;
+// تصدير PDF أفقي (A4 Landscape) باستخدام html2canvas + jsPDF
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = src; s.onload = resolve; s.onerror = reject;
+    document.head.appendChild(s);
   });
 }
+
+async function generatePDF() {
+  const btn = $("#btnExportPDF");
+  const originalText = btn.innerHTML;
+  btn.innerHTML = "⏳ جاري إعداد PDF...";
+  btn.disabled = true;
+
+  try {
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+  } catch (e) {
+    alert("تعذر تحميل أدوات PDF، يرجى التأكد من اتصالك بالإنترنت.");
+    btn.innerHTML = originalText; btn.disabled = false;
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const board = document.querySelector('.board');
+  const oldMaxHeight = board.style.maxHeight;
+  board.style.maxHeight = 'none';
+
+  try {
+    const canvas = await html2canvas(document.getElementById('captureArea'), {
+      scale: 2,
+      backgroundColor: getComputedStyle(document.body).backgroundColor
+    });
+    board.style.maxHeight = oldMaxHeight;
+
+    const imgData = canvas.toDataURL('image/png');
+    // A4 landscape: 297mm × 210mm
+    const pdfW = 297, pdfH = 210;
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    const imgW = canvas.width, imgH = canvas.height;
+    const ratio = Math.min(pdfW / imgW, pdfH / imgH);
+    const drawW = imgW * ratio, drawH = imgH * ratio;
+    const offsetX = (pdfW - drawW) / 2, offsetY = (pdfH - drawH) / 2;
+
+    pdf.addImage(imgData, 'PNG', offsetX, offsetY, drawW, drawH);
+    const today = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+    pdf.save(`تقرير_الموقع_${today}.pdf`);
+  } catch (err) {
+    console.error(err);
+    alert("حدث خطأ أثناء تصدير PDF.");
+  } finally {
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+  }
+}
+$("#btnExportPDF").onclick = generatePDF;
 
 // تجهيز للطباعة (تعديل مقاس A4 أفقي)
 function preparePrint(){
