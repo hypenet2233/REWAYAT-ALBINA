@@ -221,7 +221,6 @@ thead tr:nth-child(2) th { top: var(--rowH); }
       </span>
     </div>
     <div class="worker-actions">
-      <button id="btnLoad" style="background:#f8fafc; color:#0f172a; border-color:#cbd5e1;">📂 استيراد جدول الإدارة</button>
       <button id="btnExportPDF" style="background:#dc2626; color:#fff; border-color:#dc2626;">📄 تصدير PDF (A4 أفقي)</button>
       <button id="btnWorkerFile" class="pri" style="background:#2b2b2b; color:#fff; border-color:#2b2b2b;">🐙 حفظ التحديثات</button>
       <button id="btnCloudLoad" class="cloud-btn-outline">☁️ استيراد من السحابة</button>
@@ -775,6 +774,12 @@ function loadGhConfig(){
 }
 function storeGhConfig(){
   try { localStorage.setItem(GH_LS_KEY, JSON.stringify(ghConfig)); } catch(e){}
+}
+
+async function ghAutoConnect(){
+  if(ghConfig.token && ghConfig.owner && ghConfig.repo){
+    await ghTestConnection();
+  }
 }
 
 function ghApiUrl(){
