@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>روايات البناء — دليل تثبيت التطبيقات</title>
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#8E2E3A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="روايات البناء">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body{font-family:'Tajawal',sans-serif;background:linear-gradient(135deg,#FDF8F3 0%,#f5e6d8 100%);min-height:100vh}
+  ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:#8E2E3A;border-radius:4px}
+  .step{counter-increment:s}
+  .step::before{content:counter(s);display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#EA7A2C;color:#fff;font-weight:800;font-size:12px;margin-inline-start:6px;flex-shrink:0}
+</style>
+</head>
+<body class="text-[#5a1c25] p-4 md:p-8">
+<div class="max-w-5xl mx-auto">
+
+  <!-- الترويسة -->
+  <div class="flex flex-wrap items-center gap-4 mb-6">
+    <img src="icon-192.png" alt="روايات البناء" class="w-16 h-16 rounded-2xl border" style="border-color:#f1ddcd">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-extrabold" style="color:#8E2E3A">دليل تثبيت التطبيقات على جهازك</h1>
+      <p class="text-sm" style="color:#8E2E3A;opacity:.7">ثبّت النظام أو أي قسم كتطبيق مستقل يعمل بأيقونة خاصة — على أي جهاز ومتصفح.</p>
+    </div>
+    <a href="index.html" class="mr-auto px-4 py-2 rounded-xl text-sm font-bold text-white" style="background:#8E2E3A"><i class="ph ph-arrow-left"></i> العودة للنظام</a>
+  </div>
+
+  <!-- بانر الكشف التلقائي -->
+  <div id="detectBanner" class="rounded-2xl p-4 mb-6 text-white shadow-lg" style="background:linear-gradient(135deg,#8E2E3A,#EA7A2C)">
+    <div class="flex items-center gap-3">
+      <i id="detIcon" class="ph ph-device-mobile text-3xl"></i>
+      <div><p class="text-xs opacity-80">يبدو أنك تستخدم</p><p id="detText" class="font-extrabold text-lg">—</p></div>
+      <button id="detInstall" onclick="tryInstall()" class="mr-auto px-4 py-2 rounded-lg font-bold" style="background:#fff;color:#8E2E3A;display:none"><i class="ph ph-download-simple"></i> تثبيت الآن</button>
+    </div>
+    <p id="detSteps" class="text-sm mt-2 leading-relaxed opacity-95"></p>
+  </div>
+
+  <!-- خطوات كل متصفح -->
+  <h2 class="font-extrabold text-lg mb-3" style="color:#8E2E3A"><i class="ph ph-list-checks"></i> الخطوات حسب الجهاز</h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+    <div class="bg-white rounded-2xl p-5 shadow-sm border" style="border-color:rgba(142,46,58,.12)" style="counter-reset:s">
+      <h3 class="font-bold mb-3 flex items-center gap-2" style="color:#8E2E3A"><i class="ph ph-android-logo text-2xl" style="color:#3ddc84"></i> أندرويد — Chrome / Edge / Samsung</h3>
+      <ol class="space-y-2 text-sm" style="counter-reset:s">
+        <li class="step flex items-start gap-1">افتح التطبيق المطلوب من قائمة «التطبيقات المتاحة» أدناه.</li>
+        <li class="step flex items-start gap-1">اضغط قائمة المتصفح (⋮) أعلى الشاشة.</li>
+        <li class="step flex items-start gap-1">اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».</li>
+        <li class="step flex items-start gap-1">أكّد — ستظهر أيقونة التطبيق على شاشتك.</li>
+      </ol>
+    </div>
+    <div class="bg-white rounded-2xl p-5 shadow-sm border" style="border-color:rgba(142,46,58,.12)">
+      <h3 class="font-bold mb-3 flex items-center gap-2" style="color:#8E2E3A"><i class="ph ph-apple-logo text-2xl"></i> آيفون / آيباد — Safari</h3>
+      <ol class="space-y-2 text-sm" style="counter-reset:s">
+        <li class="step flex items-start gap-1">افتح التطبيق المطلوب في متصفح Safari.</li>
+        <li class="step flex items-start gap-1">اضغط زر المشاركة <i class="ph ph-export"></i> في الأسفل.</li>
+        <li class="step flex items-start gap-1">مرّر واختر «إضافة إلى الشاشة الرئيسية».</li>
+        <li class="step flex items-start gap-1">اضغط «إضافة» — يظهر التطبيق على الشاشة.</li>
+      </ol>
+    </div>
+    <div class="bg-white rounded-2xl p-5 shadow-sm border" style="border-color:rgba(142,46,58,.12)">
+      <h3 class="font-bold mb-3 flex items-center gap-2" style="color:#8E2E3A"><i class="ph ph-desktop text-2xl" style="color:#2563eb"></i> كمبيوتر — Chrome / Edge</h3>
+      <ol class="space-y-2 text-sm" style="counter-reset:s">
+        <li class="step flex items-start gap-1">افتح التطبيق المطلوب في المتصفح.</li>
+        <li class="step flex items-start gap-1">اضغط أيقونة التثبيت <i class="ph ph-monitor-arrow-up"></i> في شريط العنوان (يمين).</li>
+        <li class="step flex items-start gap-1">أو من قائمة (⋮) اختر «تثبيت…».</li>
+        <li class="step flex items-start gap-1">سيفتح كنافذة تطبيق مستقلة.</li>
+      </ol>
+    </div>
+    <div class="bg-white rounded-2xl p-5 shadow-sm border" style="border-color:rgba(142,46,58,.12)">
+      <h3 class="font-bold mb-3 flex items-center gap-2" style="color:#8E2E3A"><i class="ph ph-firefox-logo text-2xl" style="color:#ff7139"></i> فايرفوكس (أندرويد)</h3>
+      <ol class="space-y-2 text-sm" style="counter-reset:s">
+        <li class="step flex items-start gap-1">افتح التطبيق المطلوب.</li>
+        <li class="step flex items-start gap-1">اضغط قائمة (⋮).</li>
+        <li class="step flex items-start gap-1">اختر «إضافة إلى الشاشة الرئيسية».</li>
+        <li class="step flex items-start gap-1">أكّد الإضافة.</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- التطبيقات المتاحة -->
+  <h2 class="font-extrabold text-lg mb-1" style="color:#8E2E3A"><i class="ph ph-squares-four"></i> التطبيقات المتاحة للتثبيت</h2>
+  <p class="text-xs mb-3" style="color:#8E2E3A;opacity:.65">افتح التطبيق (يفتح في نافذة جديدة) ثم اتبع خطوات متصفحك أعلاه لتثبيته.</p>
+  <div id="apps" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>
+
+  <p class="text-center text-xs mt-8" style="color:#8E2E3A;opacity:.55">التثبيت يعمل عبر رابط آمن (HTTPS) — روايات البناء © </p>
+</div>
+
+<script>
+"use strict";
+const APPS = [
+  { f: "index.html", n: "النظام الموحّد (الكل)", i: "ph-buildings-apartment", primary: true },
+  { f: "نموذج المتابعة الميدانية.html", n: "المتابعة الميدانية", i: "ph-clipboard-text" },
+  { f: "contracting.html", n: "المقاولات", i: "ph-buildings" },
+  { f: "portables.html", n: "المصانع", i: "ph-house-line" },
+  { f: "warehouses.html", n: "المخازن", i: "ph-warehouse" },
+  { f: "hr.html", n: "الموظفين", i: "ph-users" },
+  { f: "workers.html", n: "العمال", i: "ph-hard-hat" },
+  { f: "finance.html", n: "المالية", i: "ph-money" },
+  { f: "it.html", n: "التقنية", i: "ph-desktop" },
+  { f: "documents.html", n: "المستندات والنماذج", i: "ph-files" }
+];
+document.getElementById("apps").innerHTML = APPS.map(a => `
+  <a href="${encodeURI(a.f)}" target="_blank" rel="noopener" class="flex flex-col items-center text-center gap-2 p-4 rounded-2xl border transition-all hover:-translate-y-1 hover:shadow-md ${a.primary ? "text-white" : "bg-white"}" style="${a.primary ? "background:linear-gradient(135deg,#8E2E3A,#EA7A2C);border-color:transparent" : "border-color:rgba(142,46,58,.12);color:#5a1c25"}">
+    <i class="ph ${a.i} text-3xl"></i>
+    <span class="text-sm font-bold leading-tight">${a.n}</span>
+    <span class="text-[11px] ${a.primary ? "opacity-90" : ""}" style="${a.primary ? "" : "color:#EA7A2C"}">فتح للتثبيت <i class="ph ph-arrow-square-out"></i></span>
+  </a>`).join("");
+
+// كشف الجهاز/المتصفح
+(function detect() {
+  const ua = navigator.userAgent;
+  const ios = /iphone|ipad|ipod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const android = /android/i.test(ua);
+  const firefox = /firefox|fxios/i.test(ua);
+  let icon = "ph-device-mobile", text, steps;
+  if (ios) {
+    icon = "ph-apple-logo"; text = "آيفون / آيباد (Safari)";
+    steps = "اضغط زر المشاركة ⬆️ في الأسفل ← «إضافة إلى الشاشة الرئيسية» ← إضافة.";
+  } else if (android && firefox) {
+    icon = "ph-firefox-logo"; text = "فايرفوكس (أندرويد)";
+    steps = "افتح قائمة (⋮) ← «إضافة إلى الشاشة الرئيسية».";
+  } else if (android) {
+    icon = "ph-android-logo"; text = "أندرويد (Chrome/Edge/Samsung)";
+    steps = "افتح قائمة (⋮) ← «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».";
+  } else {
+    icon = "ph-desktop"; text = "كمبيوتر (Chrome/Edge)";
+    steps = "اضغط أيقونة التثبيت في شريط العنوان، أو قائمة (⋮) ← «تثبيت…».";
+  }
+  document.getElementById("detIcon").className = "ph " + icon + " text-3xl";
+  document.getElementById("detText").textContent = text;
+  document.getElementById("detSteps").textContent = steps;
+})();
+
+// دعم التثبيت المباشر إن توفّر (Chrome/Edge)
+let deferredPrompt = null;
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault(); deferredPrompt = e;
+  document.getElementById("detInstall").style.display = "inline-flex";
+});
+function tryInstall() {
+  if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.finally(() => { deferredPrompt = null; }); }
+  else { alert("افتح التطبيق المطلوب من القائمة أدناه ثم استخدم خطوات متصفحك لتثبيته."); }
+}
+if ("serviceWorker" in navigator) { navigator.serviceWorker.register("sw.js").catch(function(){}); }
+</script>
+</body>
+</html>
