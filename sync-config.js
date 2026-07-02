@@ -1,21 +1,14 @@
 /* ============================================================
-   إعداد المزامنة المركزي لروايات البناء
-   يملؤه المسؤول مرة واحدة (أو ينزّله من زر «حفظ إعداد النظام»
-   داخل النموذج بعد تعبئة الحقول)، ثم يُرفع مع النظام على GitHub.
-   بعدها: كل العاملين والمدير يتصلون تلقائيًا دون إدخال أي بيانات.
-
-   ⚠️ تنبيه أمني مهم: هذا الملف يُقدَّم علنًا مع الموقع، لذا التوكن
-   الموضوع هنا يمكن لأي شخص يفتح الموقع رؤيته. استخدم:
-   - Fine-grained token بصلاحية Contents: Read & Write على مستودع
-     بيانات واحد فقط (يفضّل مستودعًا خاصًّا منفصلًا عن الموقع).
-   - لا تستخدم توكنًا كامل الصلاحيات (classic repo).
-   للحل الآمن تمامًا متعدد المستخدمين: استخدم Supabase (مفتاح عام آمن).
+   إعداد المزامنة المركزي لروايات البناء — Supabase
+   هذه القيم آمنة للنشر (مفتاح anon عام محميّ بصلاحيات على الخادم).
+   يُرفع مع النظام مرة واحدة، فيتصل كل العاملين والمدير تلقائيًا
+   دون إدخال أي بيانات.
    ============================================================ */
 window.RB_SYNC = {
-  token:  "",                          // Fine-grained PAT (Contents R/W)
-  owner:  "",                          // اسم المالك (username أو org)
-  repo:   "",                          // اسم مستودع البيانات
-  branch: "main",
-  path:   "data/field-tracking.json",  // مسار ملف البيانات في المستودع
-  autoSync: true                       // رفع تلقائي عند الحفظ لكل العاملين
+  provider:    "supabase",
+  supabaseUrl: "https://qxrsazicvgtijiraunhg.supabase.co",
+  supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4cnNhemljdmd0aWppcmF1bmhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5OTk0MzcsImV4cCI6MjA5ODU3NTQzN30.YVWVO0errq0fD6Z80ZutAv77F5OWgphPHtK_Q0K5SC4",
+  table:       "field_tracking",
+  id:          "main",     // معرّف لوح المتابعة (صفّ واحد مشترك)
+  autoSync:    true        // العامل: رفع تلقائي عند الحفظ (افتراضي)
 };

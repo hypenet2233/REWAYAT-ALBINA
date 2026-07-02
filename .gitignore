@@ -18,7 +18,7 @@ ehthumbs.db
 .idea/
 
 # منع رفع الأسرار (توكنات/إعدادات حسّاسة)
-sync-config.js
+# ملاحظة: sync-config.js الآن يحوي مفتاح Supabase anon العام (آمن للنشر) — لذا يُرفع مع النظام.
 مستندات/مستند نصي جديد.txt
 *token*.txt
 *secret*

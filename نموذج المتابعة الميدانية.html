@@ -217,13 +217,13 @@ thead tr:nth-child(2) th { top: var(--rowH); }
         ١- اكتب نسبة الإنجاز (%) بجوار البند المكتمل.<br>
         ٢- اضغط مرة واحدة على أي مربع في الشبكة لوضع علامة إنجاز (✅).<br>
         ٣- اضغط <b>مرتين متتاليتين</b> على المربع لكتابة ملاحظة نصية (مثل سبب التأخير).<br>
-        ٤- اضغط <b>🐙 حفظ التحديثات</b> لرفع البيانات إلى GitHub.<br>
+        ٤- اضغط <b>☁️ حفظ التحديثات</b> لرفع البيانات إلى السحابة (يراها المشرف فورًا).<br>
         ٥- اضغط <b>📄 تصدير PDF</b> لإنشاء تقرير للطباعة أو الإرسال.
       </span>
     </div>
     <div class="worker-actions">
       <button id="btnExportPDF" style="background:#dc2626; color:#fff; border-color:#dc2626;">📄 تصدير PDF (A4 أفقي)</button>
-      <button id="btnWorkerFile" class="pri" style="background:#2b2b2b; color:#fff; border-color:#2b2b2b;">🐙 حفظ التحديثات</button>
+      <button id="btnWorkerFile" class="pri" style="background:#2b2b2b; color:#fff; border-color:#2b2b2b;">☁️ حفظ التحديثات</button>
       <button id="btnCloudLoad" class="cloud-btn-outline">☁️ استيراد من السحابة</button>
       <button id="btnLocalBackup" style="background:#f8fafc; color:#6b7280; border-color:#d1d5db;">💾 نسخة محلية</button>
       <input type="file" id="fileInput" accept=".json" style="display:none">
@@ -258,23 +258,24 @@ thead tr:nth-child(2) th { top: var(--rowH); }
         <button id="setImport" style="background:#eff6ff; color:#1d4ed8; border-color:#93c5fd;">📂 استيراد جدول الإدارة</button>
         <button id="setReset" style="background:#fef2f2; color:#b91c1c; border-color:#fca5a5;">↺ إعادة ضبط</button>
       </div>
-      <!-- Cloud Sync Settings (GitHub) -->
+      <!-- Cloud Sync Settings (Supabase — central) -->
       <div class="sync-card">
-        <div class="sync-card-title">🐙 مزامنة عبر GitHub (مستودع المشروع)</div>
-        <div class="sync-card-desc">بما أن مشروعك في مستودع <b>GitHub</b>، يمكن حفظ التحديثات مباشرة فيه. أنشئ <b>Personal Access Token</b> من GitHub → Settings → Developer settings → Tokens (classic) → امنح صلاحية <code>repo</code>. ثم أدخل بيانات المستودع أدناه.</div>
+        <div class="sync-card-title">☁️ المزامنة السحابية (Supabase)</div>
+        <div class="sync-card-desc">النظام متصل بالسحابة <b>تلقائيًا</b> عبر الإعداد المركزي — لا حاجة لإدخال أي بيانات. اختر دورك فقط:<br>• <b>العامل الميداني</b>: فعّل «الرفع التلقائي» ليُرسل كل تعديل فورًا إلى السحابة.<br>• <b>المشرف / المدير</b>: فعّل «المراقبة المباشرة» لترى آخر تحديثات الميدان تلقائيًا كل 15 ثانية.</div>
         <div class="settings-grid" style="margin-top:8px;">
-          <label class="sync-field"><label>GitHub Token (Personal Access Token)</label><input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxxx"></label>
-          <label class="sync-field"><label>اسم المالك (Owner)</label><input type="text" id="ghOwner" placeholder="مثال: username أو org-name"></label>
-          <label class="sync-field"><label>اسم المستودع (Repository)</label><input type="text" id="ghRepo" placeholder="مثال: project-tracking"></label>
-          <label class="sync-field"><label>الفرع (Branch)</label><input type="text" id="ghBranch" placeholder="main"></label>
-          <label class="sync-field"><label>مسار الملف في المستودع</label><input type="text" id="ghPath" placeholder="مثال: data/field-tracking.json"></label>
-          <label class="fld chk"><input type="checkbox" id="ghAutoSync"><span>🔄 رفع تلقائي عند كل تعديل (وضع العامل)</span></label>
+          <label class="sync-field" style="display:none"><label>Token</label><input type="password" id="ghToken"></label>
+          <label class="sync-field" style="display:none"><label>Owner</label><input type="text" id="ghOwner"></label>
+          <label class="sync-field" style="display:none"><label>Repository</label><input type="text" id="ghRepo"></label>
+          <label class="sync-field" style="display:none"><label>Branch</label><input type="text" id="ghBranch"></label>
+          <label class="sync-field" style="display:none"><label>Path</label><input type="text" id="ghPath"></label>
+          <label class="fld chk"><input type="checkbox" id="ghAutoSync"><span>🔄 الرفع التلقائي عند كل تعديل (وضع العامل)</span></label>
           <label class="fld chk"><input type="checkbox" id="ghAutoRefresh"><span>👁️ المراقبة المباشرة — تحديث تلقائي كل 15 ثانية (وضع المشرف)</span></label>
         </div>
         <div class="sync-actions">
-          <button id="btnConnectCloud" class="cloud-btn">🔗 الاتصال بـ GitHub</button>
-          <button id="btnTestCloud" class="cloud-btn-outline">✅ اختبار الاتصال</button>
-          <button id="btnExportSyncCfg" class="cloud-btn-outline">💾 حفظ إعداد النظام (للمسؤول)</button>
+          <button id="btnCloudReload" class="cloud-btn-outline">☁️ تحديث الآن من السحابة</button>
+          <button id="btnConnectCloud" class="cloud-btn" style="display:none"></button>
+          <button id="btnTestCloud" class="cloud-btn-outline" style="display:none"></button>
+          <button id="btnExportSyncCfg" class="cloud-btn-outline" style="display:none"></button>
         </div>
         <div id="syncConfigStatus" class="sync-status offline" style="display:none;"></div>
       </div>
@@ -906,7 +907,7 @@ function fillGhSettings(){
   $("#ghPath").value = ghConfig.path || "data/field-tracking.json";
   $("#ghAutoSync").checked = !!ghConfig.autoSync;
   if($("#ghAutoRefresh")) $("#ghAutoRefresh").checked = !!ghConfig.autoRefresh;
-  if(ghConnected){ showSyncStatus("online", "🐙 متصل — " + ghConfig.owner + "/" + ghConfig.repo); }
+  if(ghConnected){ showSyncStatus("online", "🟢 متصل بالسحابة (Supabase)"); }
 }
 
 // Cloud events
@@ -961,6 +962,81 @@ save = function(){
   originalSave();
   ghAutoSave();
 };
+
+/* ====================== طبقة Supabase (تتقدّم على GitHub تلقائيًا) ======================
+   عند وجود إعداد Supabase في sync-config.js، نستبدل دوال الرفع/التنزيل بواجهة REST
+   الخاصة بـ Supabase — بلا مكتبات. anon key عام آمن (محميّ بصلاحيات RLS على الخادم). */
+(function(){
+  const c = window.RB_SYNC;
+  if(!c || !(c.provider === "supabase" || c.supabaseUrl)) return; // لا Supabase → يبقى سلوك GitHub
+
+  const cfg = () => ({ url:c.supabaseUrl, key:c.supabaseKey, table:(c.table||"field_tracking"), id:(c.id||"main") });
+  const hdr = () => ({ apikey:cfg().key, Authorization:"Bearer "+cfg().key });
+  const whoami = () => (localStorage.getItem("rb_device_name") || navigator.userAgent.substring(0,40));
+
+  // اختبار الاتصال — قراءة خفيفة
+  async function sbTest(){
+    const s = cfg();
+    if(!s.url || !s.key){ showSyncStatus("offline","⚠️ إعداد السحابة ناقص"); return false; }
+    try{
+      const res = await fetch(`${s.url}/rest/v1/${s.table}?select=id&limit=1`, { headers:hdr(), cache:"no-store" });
+      if(!res.ok) throw new Error("HTTP "+res.status);
+      ghConnected = true; showSyncStatus("online","🟢 متصل بالسحابة (Supabase)"); return true;
+    }catch(err){ ghConnected = false; showSyncStatus("offline","⚠️ فشل الاتصال: "+(err.message||"خطأ شبكة")); return false; }
+  }
+
+  // رفع (upsert) — العامل
+  async function sbSave(){
+    const s = cfg();
+    if(!s.url || !s.key){ showSyncStatus("offline","⚠️ إعداد السحابة ناقص"); return; }
+    showSyncStatus("pending","⏳ جاري الحفظ في السحابة...");
+    const row = { id:s.id, data:state, updated_by:whoami(), updated_at:new Date().toISOString() };
+    try{
+      const res = await fetch(`${s.url}/rest/v1/${s.table}?on_conflict=id`, {
+        method:"POST",
+        headers:Object.assign(hdr(), { "Content-Type":"application/json", Prefer:"resolution=merge-duplicates,return=minimal" }),
+        body:JSON.stringify(row)
+      });
+      if(!res.ok) throw new Error("HTTP "+res.status+" "+(await res.text()).slice(0,120));
+      ghConnected = true;
+      showSyncStatus("online","🟢 تم الحفظ في السحابة — "+new Date().toLocaleTimeString('ar-SA'));
+    }catch(err){ showSyncStatus("offline","⚠️ فشل الحفظ: "+(err.message||"خطأ شبكة")); }
+  }
+
+  // تنزيل — المشرف/المدير
+  async function sbLoad(){
+    const s = cfg();
+    if(!s.url || !s.key){ showSyncStatus("offline","⚠️ إعداد السحابة ناقص"); return; }
+    try{
+      const res = await fetch(`${s.url}/rest/v1/${s.table}?id=eq.${encodeURIComponent(s.id)}&select=data,updated_by,updated_at`, { headers:hdr(), cache:"no-store" });
+      if(!res.ok) throw new Error("HTTP "+res.status);
+      const rows = await res.json();
+      ghConnected = true;
+      if(rows && rows.length && rows[0].data && rows[0].data.tasks){
+        const val = rows[0].data;
+        if(val.title !== undefined) state = val; else Object.assign(state, val);
+        localStorage.setItem(LS_KEY, JSON.stringify(state));
+        render(); if(typeof fillSettings === "function") fillSettings();
+        const by = rows[0].updated_by ? (" · "+rows[0].updated_by) : "";
+        showSyncStatus("online","🟢 محدّث من السحابة — "+new Date().toLocaleTimeString('ar-SA')+by);
+      } else {
+        showSyncStatus("online","🟢 متصل بالسحابة — لا توجد بيانات محفوظة بعد");
+      }
+    }catch(err){ showSyncStatus("offline","⚠️ فشل الاستيراد: "+(err.message||"خطأ شبكة")); }
+  }
+
+  // استبدال دوال GitHub (المتغيرات قابلة لإعادة الإسناد)
+  ghSave = sbSave; ghLoad = sbLoad; ghTestConnection = sbTest;
+  ghAutoConnect = async () => await sbTest();
+
+  // إعادة ربط الأزرار التي التقطت المرجع القديم بالإسناد المباشر
+  if($("#btnWorkerFile")) $("#btnWorkerFile").onclick = ghSave;
+  if($("#btnCloudLoad"))  $("#btnCloudLoad").onclick  = ghLoad;
+  if($("#btnCloudReload")) $("#btnCloudReload").onclick = ghLoad;
+
+  // افتراضيًا: وضع «العامل» (رفع تلقائي) إن لم يختر هذا الجهاز دورًا من قبل
+  if(!localStorage.getItem(GH_LS_KEY) && c.autoSync != null) ghConfig.autoSync = c.autoSync;
+})();
 
 /* تشغيل العرض لأول مرة */
 render();
