@@ -16,3 +16,9 @@ ehthumbs.db
 # محررات
 .vscode/
 .idea/
+
+# منع رفع الأسرار (توكنات/إعدادات حسّاسة)
+sync-config.js
+مستندات/مستند نصي جديد.txt
+*token*.txt
+*secret*
