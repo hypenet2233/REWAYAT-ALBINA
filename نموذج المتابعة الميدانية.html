@@ -209,6 +209,16 @@ thead tr:nth-child(2) th { top: var(--rowH); }
   <!-- تبويب: الجدول -->
   <div id="tab-board" class="tab-panel active">
 
+  <!-- شريط اختيار المشروع (متعدد المشاريع) -->
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:10px 14px;margin-bottom:12px;">
+    <span style="font-weight:800;color:#8E2E3A;">📁 المشروع الحالي:</span>
+    <select id="projSelect" style="min-width:220px;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font-family:inherit;font-size:14px;background:#fff;"></select>
+    <button id="btnNewProj" class="cloud-btn-outline">＋ مشروع جديد</button>
+    <button id="btnDelProj" class="cloud-btn-outline" style="color:#b91c1c;border-color:#fca5a5;">🗑 حذف المشروع</button>
+    <button id="btnRefreshProjs" class="cloud-btn-outline">🔄 تحديث القائمة</button>
+    <span id="projMeta" style="color:#6b7280;font-size:13px;"></span>
+  </div>
+
   <!-- تعليمات وأدوات العامل -->
   <div class="worker-toolbar">
     <div class="worker-toolbar-text">
@@ -263,6 +273,7 @@ thead tr:nth-child(2) th { top: var(--rowH); }
         <div class="sync-card-title">☁️ المزامنة السحابية (Supabase)</div>
         <div class="sync-card-desc">النظام متصل بالسحابة <b>تلقائيًا</b> عبر الإعداد المركزي — لا حاجة لإدخال أي بيانات. اختر دورك فقط:<br>• <b>العامل الميداني</b>: فعّل «الرفع التلقائي» ليُرسل كل تعديل فورًا إلى السحابة.<br>• <b>المشرف / المدير</b>: فعّل «المراقبة المباشرة» لترى آخر تحديثات الميدان تلقائيًا كل 15 ثانية.</div>
         <div class="settings-grid" style="margin-top:8px;">
+          <label class="sync-field" style="grid-column:1/-1"><label>👤 اسمك / اسم الموقع (يظهر للمدير كـ «آخر تحديث بواسطة»)</label><input type="text" id="deviceName" placeholder="مثال: أحمد — موقع الخبر"></label>
           <label class="sync-field" style="display:none"><label>Token</label><input type="password" id="ghToken"></label>
           <label class="sync-field" style="display:none"><label>Owner</label><input type="text" id="ghOwner"></label>
           <label class="sync-field" style="display:none"><label>Repository</label><input type="text" id="ghRepo"></label>
@@ -970,7 +981,9 @@ save = function(){
   const c = window.RB_SYNC;
   if(!c || !(c.provider === "supabase" || c.supabaseUrl)) return; // لا Supabase → يبقى سلوك GitHub
 
-  const cfg = () => ({ url:c.supabaseUrl, key:c.supabaseKey, table:(c.table||"field_tracking"), id:(c.id||"main") });
+  // المشروع الحالي يحدّد سجلّ السحابة (صفّ لكل مشروع) — يُحفظ اختيار كل جهاز محليًا
+  const getProjId = () => (localStorage.getItem("rb_project_id") || c.id || "main");
+  const cfg = () => ({ url:c.supabaseUrl, key:c.supabaseKey, table:(c.table||"field_tracking"), id:getProjId() });
   const hdr = () => ({ apikey:cfg().key, Authorization:"Bearer "+cfg().key });
   const whoami = () => (localStorage.getItem("rb_device_name") || navigator.userAgent.substring(0,40));
 
@@ -981,7 +994,7 @@ save = function(){
     try{
       const res = await fetch(`${s.url}/rest/v1/${s.table}?select=id&limit=1`, { headers:hdr(), cache:"no-store" });
       if(!res.ok) throw new Error("HTTP "+res.status);
-      ghConnected = true; showSyncStatus("online","🟢 متصل بالسحابة (Supabase)"); return true;
+      ghConnected = true; showSyncStatus("online","🟢 متصل بالسحابة (Supabase)"); loadProjectsList(); return true;
     }catch(err){ ghConnected = false; showSyncStatus("offline","⚠️ فشل الاتصال: "+(err.message||"خطأ شبكة")); return false; }
   }
 
@@ -1033,6 +1046,105 @@ save = function(){
   if($("#btnWorkerFile")) $("#btnWorkerFile").onclick = ghSave;
   if($("#btnCloudLoad"))  $("#btnCloudLoad").onclick  = ghLoad;
   if($("#btnCloudReload")) $("#btnCloudReload").onclick = ghLoad;
+
+  /* ---------- إدارة تعدّد المشاريع ---------- */
+  // جلب قائمة المشاريع (صفوف السحابة) وتعبئة المُنتقي
+  async function loadProjectsList(){
+    const sel = $("#projSelect"); if(!sel) return;
+    const s = cfg();
+    try{
+      const res = await fetch(`${s.url}/rest/v1/${s.table}?select=id,updated_by,updated_at,data&order=updated_at.desc`, { headers:hdr(), cache:"no-store" });
+      if(!res.ok) throw new Error("HTTP "+res.status);
+      const rows = await res.json();
+      const cur = getProjId();
+      sel.innerHTML = "";
+      rows.forEach(r=>{
+        const title = (r.data && r.data.title) ? r.data.title : r.id;
+        const o = document.createElement("option"); o.value = r.id; o.textContent = title; sel.appendChild(o);
+      });
+      // إن لم يكن المشروع الحالي ضمن السحابة بعد، أضِفه محليًا
+      if(![...sel.options].some(o=>o.value===cur)){
+        const o = document.createElement("option"); o.value = cur; o.textContent = ((typeof state!=="undefined" && state.title) ? state.title : cur) + " (محلي)";
+        sel.insertBefore(o, sel.firstChild);
+      }
+      sel.value = cur;
+      updateProjMeta(rows, cur);
+    }catch(err){ /* تجاهل أخطاء القائمة */ }
+  }
+
+  function updateProjMeta(rows, cur){
+    const meta = $("#projMeta"); if(!meta) return;
+    const row = (rows||[]).find(r=>r.id===cur);
+    if(row){
+      const by = row.updated_by ? (" · بواسطة " + row.updated_by) : "";
+      const when = row.updated_at ? new Date(row.updated_at).toLocaleString('ar-SA') : "";
+      meta.textContent = "🕒 آخر تحديث: " + when + by;
+    } else { meta.textContent = "مشروع جديد — لم يُحفظ في السحابة بعد"; }
+  }
+
+  // التبديل إلى مشروع آخر (مع حفظ الحالي أولًا للعامل)
+  async function switchProject(newId){
+    if(!newId || newId === getProjId()){ return; }
+    if(ghConfig.autoSync && ghConnected) await ghSave();   // flush للمشروع الحالي (العامل فقط)
+    localStorage.setItem("rb_project_id", newId);
+    await ghLoad();                                        // تحميل المشروع الجديد
+    await loadProjectsList();
+  }
+
+  // إنشاء مشروع جديد
+  async function newProject(){
+    const name = (prompt("اسم المشروع الجديد:") || "").trim();
+    if(!name) return;
+    if(ghConfig.autoSync && ghConnected) await ghSave();   // احفظ الحالي أولًا
+    const id = "proj-" + Date.now().toString(36);
+    localStorage.setItem("rb_project_id", id);
+    state = (typeof defaultState==="function") ? defaultState() : state;
+    state.title = name;
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+    render(); if(typeof fillSettings==="function") fillSettings();
+    await ghSave();                                        // أنشئ الصف بالسحابة
+    await loadProjectsList();
+    showSyncStatus("online","🟢 أُنشئ مشروع: " + name);
+  }
+
+  // حذف المشروع الحالي من السحابة (يتطلّب سياسة حذف anon مفعّلة)
+  async function deleteProject(){
+    const sel = $("#projSelect"); if(!sel || !sel.value) return;
+    const id = getProjId();
+    const title = (sel.options[sel.selectedIndex] || {}).textContent || id;
+    if(!confirm("حذف المشروع «" + title + "» نهائيًا من السحابة؟ لا يمكن التراجع.")) return;
+    const s = cfg();
+    try{
+      const res = await fetch(`${s.url}/rest/v1/${s.table}?id=eq.${encodeURIComponent(id)}`, { method:"DELETE", headers:Object.assign(hdr(), { Prefer:"return=representation" }) });
+      if(!res.ok) throw new Error("HTTP " + res.status + " " + (await res.text()).slice(0,120));
+      const deleted = await res.json().catch(()=>[]);
+      if(!Array.isArray(deleted) || deleted.length === 0){
+        showSyncStatus("offline","⚠️ لم يُحذف — فعّل «سياسة الحذف» في Supabase (شغّل أمر SQL للحذف مرة واحدة).");
+        return;
+      }
+      showSyncStatus("online","🟢 حُذف المشروع: " + title);
+      // انتقل لأحدث مشروع متبقٍّ
+      const lr = await fetch(`${s.url}/rest/v1/${s.table}?select=id&order=updated_at.desc&limit=1`, { headers:hdr(), cache:"no-store" });
+      const rows = await lr.json();
+      const next = (rows && rows[0]) ? rows[0].id : "main";
+      localStorage.setItem("rb_project_id", next);
+      await ghLoad();
+      await loadProjectsList();
+    }catch(err){ showSyncStatus("offline","⚠️ فشل الحذف — فعّل سياسة الحذف في Supabase: " + (err.message||"")); }
+  }
+
+  // ربط عناصر المشاريع
+  if($("#projSelect")) $("#projSelect").addEventListener("change", e => switchProject(e.target.value));
+  if($("#btnNewProj")) $("#btnNewProj").onclick = newProject;
+  if($("#btnDelProj")) $("#btnDelProj").onclick = deleteProject;
+  if($("#btnRefreshProjs")) $("#btnRefreshProjs").onclick = loadProjectsList;
+
+  // حقل اسم العامل/الموقع → localStorage (يستخدمه whoami في updated_by)
+  const dn = $("#deviceName");
+  if(dn){
+    dn.value = localStorage.getItem("rb_device_name") || "";
+    dn.addEventListener("change", () => localStorage.setItem("rb_device_name", dn.value.trim()));
+  }
 
   // افتراضيًا: وضع «العامل» (رفع تلقائي) إن لم يختر هذا الجهاز دورًا من قبل
   if(!localStorage.getItem(GH_LS_KEY) && c.autoSync != null) ghConfig.autoSync = c.autoSync;
