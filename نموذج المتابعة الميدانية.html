@@ -409,9 +409,7 @@ function renderInfo(){
       <td class="c-name"><input value="${esc(tk.name)}" data-f="name" data-i="${i}" placeholder="اسم البند"></td>
       <td class="c-prog prog"><input type="number" min="0" max="100" value="${tk.prog||0}" data-f="prog" data-i="${i}"></td>
       <td class="c-act">
-        <button data-act="up" data-i="${i}" title="تحريك لأعلى">▲</button>
-        <button data-act="down" data-i="${i}" title="تحريك لأسفل">▼</button>
-        <button class="del" data-act="del" data-i="${i}" title="حذف البند">✖</button>
+        <button class="del" data-act="del" data-i="${i}" title="حذف البند">✖ حذف</button>
       </td>
     </tr>`;
   });
@@ -480,11 +478,10 @@ $("#infoTbl").addEventListener("click", e => {
   const i = +b.dataset.i, act = b.dataset.act;
   if(act === "del"){
     if(state.tasks.length <= 1){ alert("لا يمكن حذف آخر بند في القائمة."); return; }
-    if(confirm("حذف هذا البند نهائيًا؟ سيُحذف صفّه من الجدول والشبكة.")){ state.tasks.splice(i, 1); save(); render(); }
-  } else if(act === "up" && i > 0){
-    [state.tasks[i-1], state.tasks[i]] = [state.tasks[i], state.tasks[i-1]]; save(); render();
-  } else if(act === "down" && i < state.tasks.length - 1){
-    [state.tasks[i+1], state.tasks[i]] = [state.tasks[i], state.tasks[i+1]]; save(); render();
+    const nm = state.tasks[i] ? (state.tasks[i].name || "") : "";
+    if(confirm("⚠️ تأكيد الحذف النهائي\n\nهل تريد حذف البند «" + nm + "»؟\nسيُحذف صفّه من الجدول والشبكة، ولا يمكن التراجع.")){
+      state.tasks.splice(i, 1); save(); render();
+    }
   }
 });
 
