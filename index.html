@@ -321,6 +321,9 @@
         .badge-orange { background: #fff3e6; color: #c56420; border: 1px solid #ffe0c2; }
         .badge-green { background: #d1fae5; color: #047857; border: 1px solid #a7f3d0; }
         .badge-violet { background: #ede9fe; color: #5b21b6; border: 1px solid #ddd6fe; }
+        .badge-teal { background: #ccfbf1; color: #0f766e; border: 1px solid #99f6e4; }
+        .badge-amber { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .badge-slate { background: #e2e8f0; color: #334155; border: 1px solid #cbd5e1; }
 
         /* Modal محسن */
         .modal-overlay {
@@ -402,6 +405,7 @@
 
     <!-- مصدر البيانات الموحّد -->
     <script src="seed-data.js"></script>
+    <script src="sync-config.js"></script>
 </head>
 <body class="text-brand-charcoal flex h-screen overflow-hidden relative">
 
@@ -448,6 +452,9 @@
                 </button>
                 <button onclick="switchTab('documents', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/75 hover:text-white hover:bg-white/10 rounded-lg transition-all font-medium">
                     <i class="ph ph-files text-xl"></i> المستندات والنماذج
+                </button>
+                <button onclick="switchTab('trackboards', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/75 hover:text-white hover:bg-white/10 rounded-lg transition-all font-medium">
+                    <i class="ph ph-list-checks text-xl"></i> جداول المتابعة
                 </button>
                 <button onclick="switchTab('install', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/75 hover:text-white hover:bg-white/10 rounded-lg transition-all font-medium">
                     <i class="ph ph-download-simple text-xl"></i> دليل تثبيت التطبيقات
@@ -578,11 +585,26 @@
                     </div>
                 </div>
 
+                <!-- الأعمال الميدانية (مباشر من الموقع عبر Supabase) -->
+                <div class="activity-table rounded-xl overflow-hidden mb-8">
+                    <div class="table-header p-4 flex justify-between items-center">
+                        <h3 class="font-bold text-white flex items-center gap-2">
+                            <i class="ph ph-hard-hat text-lg"></i>
+                            الأعمال الميدانية — مباشر من الموقع
+                        </h3>
+                        <span id="fieldSyncMeta" class="text-xs text-white/70 flex items-center gap-1">
+                            <i class="ph ph-broadcast"></i>
+                            يُحدَّث من النموذج الميداني
+                        </span>
+                    </div>
+                    <div id="fieldPanel" class="p-4"></div>
+                </div>
+
                 <!-- جدول الأنشطة -->
                 <div class="activity-table rounded-xl overflow-hidden">
                     <div class="table-header p-4 flex justify-between items-center">
                         <h3 class="font-bold text-white flex items-center gap-2">
-                            <i class="ph ph-pulse text-lg"></i> 
+                            <i class="ph ph-pulse text-lg"></i>
                             أحدث الأنشطة عبر الأقسام
                         </h3>
                         <span class="text-xs text-white/70 flex items-center gap-1">
@@ -616,6 +638,33 @@
             <div id="finance"     class="tab-content"><iframe data-src="finance.html"     class="w-full rounded-2xl border-2 bg-white" style="height:calc(100vh - 8rem); border-color: rgba(142,46,58,0.12); box-shadow: 0 4px 24px rgba(142,46,58,0.08);"></iframe></div>
             <div id="it"          class="tab-content"><iframe data-src="it.html"          class="w-full rounded-2xl border-2 bg-white" style="height:calc(100vh - 8rem); border-color: rgba(142,46,58,0.12); box-shadow: 0 4px 24px rgba(142,46,58,0.08);"></iframe></div>
             <div id="documents"   class="tab-content"><iframe data-src="documents.html"   class="w-full rounded-2xl border-2 bg-white" style="height:calc(100vh - 8rem); border-color: rgba(142,46,58,0.12); box-shadow: 0 4px 24px rgba(142,46,58,0.08);"></iframe></div>
+
+            <!-- تبويب: جداول المتابعة (كل مشروع في بطاقة مستقلة) -->
+            <div id="trackboards" class="tab-content">
+                <div class="section-title">
+                    <div class="line"></div>
+                    <div>
+                        <h2>جداول المتابعة الميدانية</h2>
+                        <p>كل مشروع في بطاقة مستقلة — افتحه لإدارة جدوله ومتابعة تقدّمه منفردًا.</p>
+                    </div>
+                </div>
+                <!-- عرض القائمة -->
+                <div id="trackListView">
+                    <div class="flex flex-wrap items-center gap-3 mb-5">
+                        <button onclick="renderTrackBoards()" class="px-4 py-2 rounded-lg text-sm font-bold text-white flex items-center gap-1.5" style="background:#8E2E3A"><i class="ph ph-arrows-clockwise"></i> تحديث القائمة</button>
+                        <button onclick="openTrackBoard('')" class="px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-1.5" style="background:#fff;color:#8E2E3A;border:1px solid #e5c7cb"><i class="ph ph-plus-circle"></i> النموذج الميداني (إنشاء / تبديل)</button>
+                    </div>
+                    <div id="trackCards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                </div>
+                <!-- عرض جدول مشروع مفرد -->
+                <div id="trackFrameView" style="display:none;">
+                    <div class="flex items-center justify-between gap-3 mb-3 flex-wrap">
+                        <button onclick="backToTrackList()" class="px-4 py-2 rounded-lg text-sm font-bold text-white inline-flex items-center gap-1.5" style="background:#8E2E3A"><i class="ph ph-arrow-right"></i> رجوع لقائمة المشاريع</button>
+                        <span class="text-sm font-bold" id="trackFrameTitle" style="color:#5a1c25"></span>
+                    </div>
+                    <iframe id="trackFrame" class="w-full rounded-2xl border-2 bg-white" style="height:calc(100vh - 12rem); border-color: rgba(142,46,58,0.12); box-shadow: 0 4px 24px rgba(142,46,58,0.08);"></iframe>
+                </div>
+            </div>
             <div id="install"     class="tab-content"><iframe data-src="install.html"     class="w-full rounded-2xl border-2 bg-white" style="height:calc(100vh - 8rem); border-color: rgba(142,46,58,0.12); box-shadow: 0 4px 24px rgba(142,46,58,0.08);"></iframe></div>
 
         </div>
@@ -691,6 +740,7 @@
 
             if (tabId === 'dashboard') computeDashboard();
             if (tabId === 'control') renderControlCenter();
+            if (tabId === 'trackboards') renderTrackBoards();
 
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.remove('nav-active');
@@ -945,6 +995,7 @@
             set('dashRevenue', fmtNum(rev) + ' ر.س');
             set('dashStaff', H.length + Wk.length);
             renderActivityFeed();
+            loadFieldDashboard();
         }
 
         function renderActivityFeed() {
@@ -980,7 +1031,18 @@
                     color = x.type === 'إيراد' ? 'progress-high' : 'progress-done';
                     label = 'تمت العملية';
                 }
-                
+                else if (dept === 'المخازن') {
+                    const st = x.status || '';
+                    if (st.includes('نفذ')) { pct = 0; color = 'progress-low'; label = 'نفذ'; }
+                    else if (st.includes('منخفض')) { pct = 40; color = 'progress-mid'; label = 'منخفض'; }
+                    else { pct = 100; color = 'progress-done'; label = 'متوفر'; }
+                }
+                else if (dept === 'العمال') {
+                    const st = x.status || '';
+                    if (st.includes('متوقف')) { pct = 0; color = 'progress-low'; label = 'متوقف'; }
+                    else { pct = 100; color = 'progress-high'; label = st || 'نشط'; }
+                }
+
                 return { pct, color, label };
             }
             
@@ -1009,12 +1071,24 @@
                 const p = getProgress(x, 'تقنية');
                 items.push({ d: x.date, dep: 'تقنية', c: 'badge-violet', ref: x.ticket, t: `${x.asset} — ${x.status}`, progress: p, source: 'نظام تقنية' });
             });
+            // المخازن: أصناف تحتاج اهتمامًا (منخفض/نفذ)
+            moduleData('rb_warehouses').filter(x => x.status === 'منخفض' || x.status === 'نفذ').forEach(x => {
+                const p = getProgress(x, 'المخازن');
+                items.push({ d: '', dep: 'المخازن', c: 'badge-amber', ref: x.sku, t: `${x.item} — ${x.status} (${x.qty} ${x.unit})`, progress: p, source: 'نظام المخازن' });
+            });
+            // العمال: متوقفون
+            moduleData('rb_workers').filter(x => x.status === 'متوقف').forEach(x => {
+                const p = getProgress(x, 'العمال');
+                items.push({ d: '', dep: 'العمال', c: 'badge-slate', ref: x.id, t: `${x.name} — ${x.trade || ''} (${x.status})`, progress: p, source: 'نظام العمال' });
+            });
+            // الأعمال الميدانية (تُجلب لحظيًا من Supabase عبر loadFieldDashboard)
+            (window.__fieldItems || []).forEach(it => items.push(it));
             items.sort((a, b) => String(b.d || '').localeCompare(String(a.d || '')));
             
             const tb = document.getElementById('activityFeed');
             if (!tb) return;
             
-            tb.innerHTML = items.slice(0, 8).map((it, idx) => {
+            tb.innerHTML = items.slice(0, 12).map((it, idx) => {
                 const p = it.progress;
                 const icon = sourceIcons[it.dep] || 'ph-circle';
                 return `<tr>
@@ -1029,7 +1103,7 @@
                         <span class="progress-pct" style="color: ${p.color === 'progress-low' ? '#ef4444' : p.color === 'progress-mid' ? '#EA7A2C' : p.color === 'progress-high' ? '#10b981' : '#8E2E3A'};">${p.pct}% ${p.label}</span>
                     </div>
                 </td>
-                <td class="text-xs whitespace-nowrap" style="color: #8E2E3A; opacity: 0.5;">${it.d || '—'}</td></tr>`;
+                <td class="text-xs whitespace-nowrap" style="color: #8E2E3A; opacity: 0.5;">${it.dDisplay || it.d || '—'}</td></tr>`;
             }).join('');
             
             // تشغيل animation للأشرطة بعد render
@@ -1038,6 +1112,175 @@
                     setTimeout(() => { bar.style.width = bar.dataset.width; }, i * 100);
                 });
             }, 100);
+        }
+
+        /* ============================================================
+           دمج الأعمال الميدانية (Supabase) — مباشر في لوحة القيادة
+           يقرأ صفوف field_tracking (مشروع لكل صفّ) ويحسب الإنجاز الفعلي
+           من بيانات النموذج نفسها (prog/cells) دون أي مساس بالنموذج.
+           ============================================================ */
+        window.__fieldItems = [];
+
+        function timeAgo(iso) {
+            if (!iso) return '';
+            const t = new Date(iso).getTime(); if (isNaN(t)) return '';
+            const s = Math.floor((Date.now() - t) / 1000);
+            if (s < 60) return 'قبل لحظات';
+            const m = Math.floor(s / 60); if (m < 60) return 'قبل ' + m + ' دقيقة';
+            const h = Math.floor(m / 60); if (h < 24) return 'قبل ' + h + ' ساعة';
+            const d = Math.floor(h / 24); return 'قبل ' + d + ' يوم';
+        }
+        function progColorFor(pct) {
+            if (pct <= 0) return 'progress-low';
+            if (pct < 50) return 'progress-mid';
+            if (pct < 100) return 'progress-high';
+            return 'progress-done';
+        }
+        // نفس منطق النموذج الميداني: نسبة الخلايا المكتملة، أو متوسط prog عند غيابها
+        function fieldProjectProgress(tasks) {
+            let planned = 0, completed = 0, totalProg = 0;
+            (tasks || []).forEach(t => {
+                Object.values(t.cells || {}).forEach(c => { if (c && c.bg) planned++; if (c && c.tx === '✅') completed++; });
+                totalProg += (t.prog || 0);
+            });
+            const avg = (tasks && tasks.length) ? Math.round(totalProg / tasks.length) : 0;
+            const main = planned > 0 ? Math.round(completed / planned * 100) : avg;
+            const done = (tasks || []).filter(t => (t.prog || 0) >= 100).length;
+            return { pct: main, done, total: (tasks || []).length };
+        }
+
+        async function loadFieldDashboard() {
+            const panel = document.getElementById('fieldPanel');
+            const meta = document.getElementById('fieldSyncMeta');
+            if (!panel) return;
+            const cfg = window.RB_SYNC;
+            if (!cfg || !cfg.supabaseUrl || !cfg.supabaseKey) {
+                panel.innerHTML = '<p class="text-sm text-center py-4" style="color:#8E2E3A;opacity:.6">لم يُهيّأ مصدر الميدان بعد.</p>';
+                return;
+            }
+            panel.innerHTML = '<p class="text-sm text-center py-4" style="color:#8E2E3A;opacity:.6"><i class="ph ph-circle-notch"></i> جارٍ جلب أحدث بيانات الميدان...</p>';
+            try {
+                const url = cfg.supabaseUrl + '/rest/v1/' + (cfg.table || 'field_tracking') + '?select=id,data,updated_by,updated_at&order=updated_at.desc';
+                const res = await fetch(url, { headers: { apikey: cfg.supabaseKey, Authorization: 'Bearer ' + cfg.supabaseKey }, cache: 'no-store' });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const rows = await res.json();
+                const projects = (rows || []).filter(r => r.data && Array.isArray(r.data.tasks));
+                window.__fieldItems = [];
+                let sumPct = 0, active = 0;
+                const cards = projects.map(r => {
+                    const pr = fieldProjectProgress(r.data.tasks);
+                    sumPct += pr.pct;
+                    if (pr.pct < 100) active++;
+                    const title = sEsc(r.data.title || r.id);
+                    const color = progColorFor(pr.pct);
+                    const who = sEsc(r.updated_by || '—');
+                    // عنصر لسجل النشاط الموحّد
+                    window.__fieldItems.push({
+                        d: r.updated_at, dDisplay: (r.updated_at || '').slice(0, 10),
+                        dep: 'الميدان', c: 'badge-teal', ref: String(r.id || '').replace('proj-', 'م-'),
+                        t: title + ' — إنجاز ' + pr.pct + '% (' + pr.done + '/' + pr.total + ' مهمة)',
+                        progress: { pct: pr.pct, color: color, label: pr.pct + '%' }, source: 'النموذج الميداني · ' + who
+                    });
+                    return '<div class="rounded-xl p-4" style="border:1px solid rgba(142,46,58,.12);background:#fff;box-shadow:0 2px 10px rgba(142,46,58,.05)">' +
+                        '<div class="flex items-center justify-between mb-2 gap-2">' +
+                            '<span class="font-bold text-sm flex items-center gap-1.5" style="color:#5a1c25"><i class="ph ph-hard-hat" style="color:#EA7A2C"></i> ' + title + '</span>' +
+                            '<span class="text-lg font-extrabold" style="color:#8E2E3A">' + pr.pct + '%</span>' +
+                        '</div>' +
+                        '<div class="progress-track mb-2"><div class="progress-fill ' + color + '" style="width:' + pr.pct + '%"></div></div>' +
+                        '<div class="flex items-center justify-between text-xs" style="color:#8E2E3A;opacity:.75">' +
+                            '<span><i class="ph ph-check-square"></i> ' + pr.done + '/' + pr.total + ' مهمة مكتملة</span>' +
+                            '<span><i class="ph ph-user"></i> ' + who + ' · ' + timeAgo(r.updated_at) + '</span>' +
+                        '</div>' +
+                    '</div>';
+                });
+                if (projects.length === 0) {
+                    panel.innerHTML = '<p class="text-sm text-center py-4" style="color:#8E2E3A;opacity:.6">لا توجد مشاريع ميدانية بعد.</p>';
+                } else {
+                    const avgAll = Math.round(sumPct / projects.length);
+                    panel.innerHTML =
+                        '<div class="flex flex-wrap gap-5 mb-4">' +
+                            '<div class="flex items-center gap-2"><span class="icon-box maroon" style="width:38px;height:38px"><i class="ph ph-buildings"></i></span><div><p class="text-xs" style="color:#8E2E3A;opacity:.6">مشاريع ميدانية نشطة</p><p class="font-bold" style="color:#5a1c25">' + active + ' / ' + projects.length + '</p></div></div>' +
+                            '<div class="flex items-center gap-2"><span class="icon-box orange" style="width:38px;height:38px"><i class="ph ph-chart-line-up"></i></span><div><p class="text-xs" style="color:#8E2E3A;opacity:.6">متوسط الإنجاز الفعلي</p><p class="font-bold" style="color:#5a1c25">' + avgAll + '%</p></div></div>' +
+                        '</div>' +
+                        '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">' + cards.join('') + '</div>';
+                }
+                if (meta) meta.innerHTML = '<i class="ph ph-broadcast"></i> مباشر — ' + projects.length + ' مشروع';
+                renderActivityFeed(); // إعادة الرسم لإدراج الميدان في السجل
+            } catch (err) {
+                panel.innerHTML = '<p class="text-sm text-center py-4" style="color:#8E2E3A;opacity:.6"><i class="ph ph-wifi-slash"></i> تعذّر الاتصال بمصدر الميدان الآن — سيظهر عند توفّر الاتصال.</p>';
+            }
+        }
+
+        /* ============================================================
+           تبويب «جداول المتابعة» — بطاقة مستقلة لكل مشروع + فتح جدوله منفردًا
+           ============================================================ */
+        const FIELD_FORM = 'نموذج المتابعة الميدانية.html';
+
+        async function renderTrackBoards() {
+            const host = document.getElementById('trackCards');
+            if (!host) return;
+            // اعرض القائمة وأخفِ إطار المشروع
+            const lv = document.getElementById('trackListView'), fv = document.getElementById('trackFrameView');
+            if (lv) lv.style.display = '';
+            if (fv) fv.style.display = 'none';
+            const cfg = window.RB_SYNC;
+            if (!cfg || !cfg.supabaseUrl || !cfg.supabaseKey) {
+                host.innerHTML = '<p class="text-sm" style="color:#8E2E3A;opacity:.6">لم يُهيّأ مصدر الميدان بعد.</p>';
+                return;
+            }
+            host.innerHTML = '<p class="text-sm" style="color:#8E2E3A;opacity:.6"><i class="ph ph-circle-notch"></i> جارٍ جلب المشاريع...</p>';
+            try {
+                const url = cfg.supabaseUrl + '/rest/v1/' + (cfg.table || 'field_tracking') + '?select=id,data,updated_by,updated_at&order=updated_at.desc';
+                const res = await fetch(url, { headers: { apikey: cfg.supabaseKey, Authorization: 'Bearer ' + cfg.supabaseKey }, cache: 'no-store' });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const rows = await res.json();
+                const projects = (rows || []).filter(r => r.data && Array.isArray(r.data.tasks));
+                if (projects.length === 0) {
+                    host.innerHTML = '<p class="text-sm" style="color:#8E2E3A;opacity:.6">لا توجد مشاريع بعد. افتح «النموذج الميداني» لإنشاء مشروع جديد.</p>';
+                    return;
+                }
+                host.innerHTML = projects.map(r => {
+                    const pr = fieldProjectProgress(r.data.tasks);
+                    const title = sEsc(r.data.title || r.id);
+                    const color = progColorFor(pr.pct);
+                    const who = sEsc(r.updated_by || '—');
+                    const idEnc = encodeURIComponent(r.id);
+                    return '<div class="stat-card rounded-xl p-5 flex flex-col gap-3">' +
+                        '<div class="flex items-center justify-between gap-2">' +
+                            '<span class="font-bold flex items-center gap-1.5" style="color:#5a1c25"><i class="ph ph-clipboard-text" style="color:#EA7A2C"></i> ' + title + '</span>' +
+                            '<span class="text-lg font-extrabold" style="color:#8E2E3A">' + pr.pct + '%</span>' +
+                        '</div>' +
+                        '<div class="progress-track"><div class="progress-fill ' + color + '" style="width:' + pr.pct + '%"></div></div>' +
+                        '<div class="flex items-center justify-between text-xs" style="color:#8E2E3A;opacity:.7">' +
+                            '<span><i class="ph ph-check-square"></i> ' + pr.done + '/' + pr.total + ' مهمة</span>' +
+                            '<span><i class="ph ph-clock"></i> ' + timeAgo(r.updated_at) + '</span>' +
+                        '</div>' +
+                        '<div class="text-xs" style="color:#8E2E3A;opacity:.6"><i class="ph ph-user"></i> آخر تحديث: ' + who + '</div>' +
+                        '<button onclick="openTrackBoard(\'' + idEnc + '\')" class="mt-1 w-full py-2.5 rounded-lg text-sm font-bold text-white flex items-center justify-center gap-1.5" style="background:linear-gradient(135deg,#8E2E3A,#EA7A2C)"><i class="ph ph-arrow-square-out"></i> فتح وإدارة الجدول</button>' +
+                    '</div>';
+                }).join('');
+            } catch (err) {
+                host.innerHTML = '<p class="text-sm" style="color:#8E2E3A;opacity:.6"><i class="ph ph-wifi-slash"></i> تعذّر الاتصال بمصدر الميدان الآن.</p>';
+            }
+        }
+
+        // فتح جدول مشروع محدّد (أو النموذج العام إن كان id فارغًا)
+        function openTrackBoard(idEnc) {
+            const id = idEnc ? decodeURIComponent(idEnc) : '';
+            const frame = document.getElementById('trackFrame');
+            if (!frame) return;
+            frame.src = encodeURI(FIELD_FORM) + (id ? ('?project=' + encodeURIComponent(id)) : '');
+            const ttl = document.getElementById('trackFrameTitle');
+            if (ttl) ttl.textContent = id ? ('📋 ' + id) : 'النموذج الميداني';
+            document.getElementById('trackListView').style.display = 'none';
+            document.getElementById('trackFrameView').style.display = '';
+        }
+        function backToTrackList() {
+            const frame = document.getElementById('trackFrame');
+            if (frame) frame.src = 'about:blank';
+            document.getElementById('trackFrameView').style.display = 'none';
+            document.getElementById('trackListView').style.display = '';
+            renderTrackBoards();
         }
 
         /* ============================================================

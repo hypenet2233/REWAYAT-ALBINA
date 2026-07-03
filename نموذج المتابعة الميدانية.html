@@ -981,6 +981,10 @@ save = function(){
   const c = window.RB_SYNC;
   if(!c || !(c.provider === "supabase" || c.supabaseUrl)) return; // لا Supabase → يبقى سلوك GitHub
 
+  // إن فُتح النموذج بمعرّف مشروع (من لوحة الإدارة عبر ?project=ID) → اجعله المشروع الحالي
+  const __openProj = new URLSearchParams(location.search).get("project");
+  if(__openProj) localStorage.setItem("rb_project_id", __openProj);
+
   // المشروع الحالي يحدّد سجلّ السحابة (صفّ لكل مشروع) — يُحفظ اختيار كل جهاز محليًا
   const getProjId = () => (localStorage.getItem("rb_project_id") || c.id || "main");
   const cfg = () => ({ url:c.supabaseUrl, key:c.supabaseKey, table:(c.table||"field_tracking"), id:getProjId() });
@@ -1156,7 +1160,10 @@ loadGhConfig();
 // اتصال تلقائي بالإعداد المحفوظ، ثم تشغيل المراقبة/التحديث للمشرف تلقائيًا
 ghAutoConnect().then(() => {
   fillGhSettings();
-  if(ghConfig.autoRefresh && ghConnected) startMonitor();
+  // إن فُتح بمشروع محدّد من لوحة الإدارة → حمّله من السحابة مباشرةً
+  const __op = new URLSearchParams(location.search).get("project");
+  if(__op && ghConnected){ ghLoad(); }
+  else if(ghConfig.autoRefresh && ghConnected){ startMonitor(); }
 }).catch(() => {});
 </script>
 <script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){})}</script>
