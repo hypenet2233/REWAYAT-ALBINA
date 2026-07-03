@@ -1062,7 +1062,7 @@ save = function(){
       const rows = await res.json();
       const cur = getProjId();
       sel.innerHTML = "";
-      rows.forEach(r=>{
+      rows.filter(r => !(r.data && r.data._deleted)).forEach(r=>{
         const title = (r.data && r.data.title) ? r.data.title : r.id;
         const o = document.createElement("option"); o.value = r.id; o.textContent = title; sel.appendChild(o);
       });

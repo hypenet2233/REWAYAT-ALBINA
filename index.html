@@ -658,9 +658,12 @@
                 </div>
                 <!-- عرض جدول مشروع مفرد -->
                 <div id="trackFrameView" style="display:none;">
-                    <div class="flex items-center justify-between gap-3 mb-3 flex-wrap">
-                        <button onclick="backToTrackList()" class="px-4 py-2 rounded-lg text-sm font-bold text-white inline-flex items-center gap-1.5" style="background:#8E2E3A"><i class="ph ph-arrow-right"></i> رجوع لقائمة المشاريع</button>
-                        <span class="text-sm font-bold" id="trackFrameTitle" style="color:#5a1c25"></span>
+                    <div class="flex items-center justify-between gap-2 mb-3 flex-wrap p-2 rounded-xl" style="background:#2b2b2b;">
+                        <span class="text-sm font-bold text-white px-2 truncate" id="trackFrameTitle" style="max-width:45%;"></span>
+                        <div class="flex items-center gap-2">
+                            <button onclick="openTrackInWindow()" title="فتح الجدول بملء الشاشة في نافذة مستقلة (أفضل للجوال)" class="px-3 py-2 rounded-lg text-sm font-bold text-white inline-flex items-center gap-1.5" style="background:linear-gradient(135deg,#8E2E3A,#EA7A2C)"><i class="ph ph-arrow-square-out"></i> فتح في نافذة</button>
+                            <button onclick="backToTrackList()" class="px-3 py-2 rounded-lg text-sm font-bold inline-flex items-center gap-1.5" style="background:#fff;color:#5a1c25"><i class="ph ph-x"></i> إغلاق</button>
+                        </div>
                     </div>
                     <iframe id="trackFrame" class="w-full rounded-2xl border-2 bg-white" style="height:calc(100vh - 12rem); border-color: rgba(142,46,58,0.12); box-shadow: 0 4px 24px rgba(142,46,58,0.08);"></iframe>
                 </div>
@@ -1164,7 +1167,7 @@
                 const res = await fetch(url, { headers: { apikey: cfg.supabaseKey, Authorization: 'Bearer ' + cfg.supabaseKey }, cache: 'no-store' });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 const rows = await res.json();
-                const projects = (rows || []).filter(r => r.data && Array.isArray(r.data.tasks));
+                const projects = (rows || []).filter(r => r.data && Array.isArray(r.data.tasks) && !r.data._deleted);
                 window.__fieldItems = [];
                 let sumPct = 0, active = 0;
                 const cards = projects.map(r => {
@@ -1234,7 +1237,7 @@
                 const res = await fetch(url, { headers: { apikey: cfg.supabaseKey, Authorization: 'Bearer ' + cfg.supabaseKey }, cache: 'no-store' });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 const rows = await res.json();
-                const projects = (rows || []).filter(r => r.data && Array.isArray(r.data.tasks));
+                const projects = (rows || []).filter(r => r.data && Array.isArray(r.data.tasks) && !r.data._deleted);
                 if (projects.length === 0) {
                     host.innerHTML = '<p class="text-sm" style="color:#8E2E3A;opacity:.6">لا توجد مشاريع بعد. افتح «النموذج الميداني» لإنشاء مشروع جديد.</p>';
                     return;
@@ -1268,15 +1271,22 @@
         }
 
         // فتح جدول مشروع محدّد (أو النموذج العام إن كان id فارغًا)
+        let __trackUrl = '';
         function openTrackBoard(idEnc) {
             const id = idEnc ? decodeURIComponent(idEnc) : '';
             const frame = document.getElementById('trackFrame');
             if (!frame) return;
-            frame.src = encodeURI(FIELD_FORM) + (id ? ('?project=' + encodeURIComponent(id)) : '');
+            __trackUrl = encodeURI(FIELD_FORM) + (id ? ('?project=' + encodeURIComponent(id)) : '');
+            frame.src = __trackUrl;
             const ttl = document.getElementById('trackFrameTitle');
             if (ttl) ttl.textContent = id ? ('📋 ' + id) : 'النموذج الميداني';
             document.getElementById('trackListView').style.display = 'none';
             document.getElementById('trackFrameView').style.display = '';
+        }
+        // فتح جدول المشروع الحالي بملء الشاشة في نافذة/تبويب مستقل (يحلّ ضيق الإطار على الجوال)
+        function openTrackInWindow() {
+            const url = __trackUrl || (encodeURI(FIELD_FORM));
+            window.open(url, '_blank');
         }
         function backToTrackList() {
             const frame = document.getElementById('trackFrame');
@@ -1286,24 +1296,34 @@
             renderTrackBoards();
         }
 
-        // حذف مشروع (صفّ) من السحابة — يتطلّب تفعيل «سياسة الحذف» في Supabase مرة واحدة
+        // حذف مشروع (صفّ) من السحابة — حذف صلب إن كانت السياسة مفعّلة، وإلا حذف ناعم
+        // تلقائيًا عبر صلاحية التحديث المتاحة (يعمل فورًا دون أي إعداد يدوي).
         async function deleteTrackBoard(idEnc, titleEnc) {
             const id = decodeURIComponent(idEnc);
             const title = titleEnc ? decodeURIComponent(titleEnc) : id;
-            if (!confirm('حذف المشروع «' + title + '» نهائيًا من السحابة؟\nلا يمكن التراجع.')) return;
+            if (!confirm('حذف المشروع «' + title + '» من القائمة نهائيًا؟')) return;
             const cfg = window.RB_SYNC;
             if (!cfg || !cfg.supabaseUrl || !cfg.supabaseKey) { alert('لم يُهيّأ مصدر الميدان بعد.'); return; }
+            const base = cfg.supabaseUrl + '/rest/v1/' + (cfg.table || 'field_tracking');
+            const H = { apikey: cfg.supabaseKey, Authorization: 'Bearer ' + cfg.supabaseKey };
+            const q = '?id=eq.' + encodeURIComponent(id);
             try {
-                const res = await fetch(cfg.supabaseUrl + '/rest/v1/' + (cfg.table || 'field_tracking') + '?id=eq.' + encodeURIComponent(id), {
-                    method: 'DELETE',
-                    headers: { apikey: cfg.supabaseKey, Authorization: 'Bearer ' + cfg.supabaseKey, Prefer: 'return=representation' }
+                // 1) محاولة الحذف الصلب (تنجح إن كانت سياسة الحذف مفعّلة)
+                let res = await fetch(base + q, { method: 'DELETE', headers: Object.assign({}, H, { Prefer: 'return=representation' }) });
+                let hard = res.ok ? await res.json().catch(() => []) : [];
+                if (Array.isArray(hard) && hard.length > 0) { renderTrackBoards(); return; }
+
+                // 2) حذف ناعم: نجلب البيانات الحالية، نضع وسم الحذف، ونحدّث الصف (بصلاحية التحديث)
+                const g = await fetch(base + q + '&select=data', { headers: H, cache: 'no-store' });
+                const rows = await g.json();
+                const data = (rows && rows[0] && rows[0].data) ? rows[0].data : {};
+                data._deleted = true;
+                res = await fetch(base + q, {
+                    method: 'PATCH',
+                    headers: Object.assign({}, H, { 'Content-Type': 'application/json', Prefer: 'return=minimal' }),
+                    body: JSON.stringify({ data: data, updated_by: 'حُذف من لوحة الإدارة', updated_at: new Date().toISOString() })
                 });
                 if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + (await res.text()).slice(0, 120));
-                const deleted = await res.json().catch(() => []);
-                if (!Array.isArray(deleted) || deleted.length === 0) {
-                    alert('⚠️ لم يُحذف — يلزم تفعيل «سياسة الحذف» في Supabase مرة واحدة:\n\ncreate policy "rb_delete" on public.field_tracking for delete using (true);\n\nأو احذف الصف مباشرةً من Supabase → Table Editor.');
-                    return;
-                }
                 renderTrackBoards();
             } catch (err) {
                 alert('تعذّر الحذف: ' + (err.message || 'خطأ في الاتصال'));
