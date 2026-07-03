@@ -1256,7 +1256,10 @@
                             '<span><i class="ph ph-clock"></i> ' + timeAgo(r.updated_at) + '</span>' +
                         '</div>' +
                         '<div class="text-xs" style="color:#8E2E3A;opacity:.6"><i class="ph ph-user"></i> آخر تحديث: ' + who + '</div>' +
-                        '<button onclick="openTrackBoard(\'' + idEnc + '\')" class="mt-1 w-full py-2.5 rounded-lg text-sm font-bold text-white flex items-center justify-center gap-1.5" style="background:linear-gradient(135deg,#8E2E3A,#EA7A2C)"><i class="ph ph-arrow-square-out"></i> فتح وإدارة الجدول</button>' +
+                        '<div class="flex items-center gap-2 mt-1">' +
+                            '<button onclick="openTrackBoard(\'' + idEnc + '\')" class="flex-1 py-2.5 rounded-lg text-sm font-bold text-white flex items-center justify-center gap-1.5" style="background:linear-gradient(135deg,#8E2E3A,#EA7A2C)"><i class="ph ph-arrow-square-out"></i> فتح وإدارة الجدول</button>' +
+                            '<button onclick="deleteTrackBoard(\'' + idEnc + '\',\'' + encodeURIComponent(r.data.title || r.id) + '\')" title="حذف المشروع" class="py-2.5 px-3 rounded-lg text-sm font-bold flex items-center justify-center shrink-0" style="background:#fef2f2;color:#b91c1c;border:1px solid #fca5a5"><i class="ph ph-trash"></i></button>' +
+                        '</div>' +
                     '</div>';
                 }).join('');
             } catch (err) {
@@ -1281,6 +1284,30 @@
             document.getElementById('trackFrameView').style.display = 'none';
             document.getElementById('trackListView').style.display = '';
             renderTrackBoards();
+        }
+
+        // حذف مشروع (صفّ) من السحابة — يتطلّب تفعيل «سياسة الحذف» في Supabase مرة واحدة
+        async function deleteTrackBoard(idEnc, titleEnc) {
+            const id = decodeURIComponent(idEnc);
+            const title = titleEnc ? decodeURIComponent(titleEnc) : id;
+            if (!confirm('حذف المشروع «' + title + '» نهائيًا من السحابة؟\nلا يمكن التراجع.')) return;
+            const cfg = window.RB_SYNC;
+            if (!cfg || !cfg.supabaseUrl || !cfg.supabaseKey) { alert('لم يُهيّأ مصدر الميدان بعد.'); return; }
+            try {
+                const res = await fetch(cfg.supabaseUrl + '/rest/v1/' + (cfg.table || 'field_tracking') + '?id=eq.' + encodeURIComponent(id), {
+                    method: 'DELETE',
+                    headers: { apikey: cfg.supabaseKey, Authorization: 'Bearer ' + cfg.supabaseKey, Prefer: 'return=representation' }
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + (await res.text()).slice(0, 120));
+                const deleted = await res.json().catch(() => []);
+                if (!Array.isArray(deleted) || deleted.length === 0) {
+                    alert('⚠️ لم يُحذف — يلزم تفعيل «سياسة الحذف» في Supabase مرة واحدة:\n\ncreate policy "rb_delete" on public.field_tracking for delete using (true);\n\nأو احذف الصف مباشرةً من Supabase → Table Editor.');
+                    return;
+                }
+                renderTrackBoards();
+            } catch (err) {
+                alert('تعذّر الحذف: ' + (err.message || 'خطأ في الاتصال'));
+            }
         }
 
         /* ============================================================
