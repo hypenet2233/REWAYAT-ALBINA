@@ -624,15 +624,39 @@ async function generatePDF() {
 
   const { jsPDF } = window.jspdf;
   const board = document.querySelector('.board');
-  const oldMaxHeight = board.style.maxHeight;
+  const capture = document.getElementById('captureArea');
+  const inner = document.querySelector('.board-inner');
+  // عناصر لا تخصّ التقرير — تُخفى أثناء الالتقاط (تبقى الترويسة + الجدول فقط)
+  const hidden = [];
+  ['.worker-toolbar', '#saveState', '#syncStatus', '.tabbar', '.foot'].forEach(sel => {
+    document.querySelectorAll(sel).forEach(el => { hidden.push([el, el.style.display]); el.style.display = 'none'; });
+  });
+  // احفظ الأنماط الأصلية لاستعادتها بعد الالتقاط
+  const _s = {
+    boardMaxH: board.style.maxHeight, boardOv: board.style.overflow,
+    capW: capture.style.width, capMaxW: capture.style.maxWidth
+  };
+  const _restore = () => {
+    board.style.maxHeight = _s.boardMaxH; board.style.overflow = _s.boardOv;
+    capture.style.width = _s.capW; capture.style.maxWidth = _s.capMaxW;
+    hidden.forEach(([el, d]) => { el.style.display = d; });
+  };
+  // إجبار العرض الكامل (أفقي) حتى على الجوال — وإلا يُلتقط الجدول طوليًا مقصوصًا
+  const fullW = Math.ceil(inner ? inner.scrollWidth : 1000) + 40;
   board.style.maxHeight = 'none';
+  board.style.overflow = 'visible';
+  capture.style.width = fullW + 'px';
+  capture.style.maxWidth = 'none';
 
   try {
-    const canvas = await html2canvas(document.getElementById('captureArea'), {
+    const canvas = await html2canvas(capture, {
       scale: 2,
-      backgroundColor: getComputedStyle(document.body).backgroundColor
+      backgroundColor: '#ffffff',
+      windowWidth: fullW,
+      width: fullW,
+      scrollX: 0,
+      scrollY: -window.scrollY
     });
-    board.style.maxHeight = oldMaxHeight;
 
     const imgData = canvas.toDataURL('image/png');
     // A4 landscape: 297mm × 210mm
@@ -650,6 +674,7 @@ async function generatePDF() {
     console.error(err);
     alert("حدث خطأ أثناء تصدير PDF.");
   } finally {
+    _restore();
     btn.innerHTML = originalText;
     btn.disabled = false;
   }
