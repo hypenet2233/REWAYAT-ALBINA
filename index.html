@@ -654,6 +654,11 @@
                 <button onclick="closeNotifications()" class="p-1 rounded-full hover:bg-white/20 transition-colors" aria-label="إغلاق"><i class="ph ph-x text-lg"></i></button>
             </div>
             <div id="notifList" class="p-3 max-h-80 overflow-y-auto space-y-2"></div>
+            <div id="notifFooter" class="p-3" style="display:none; border-top:1px solid #eee;">
+                <button onclick="dismissAllNotifications()" class="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-colors" style="background:#fef2f2; color:#b91c1c; border:1px solid #fca5a5;" onmouseover="this.style.background='#fde8e8'" onmouseout="this.style.background='#fef2f2'">
+                    <i class="ph ph-trash text-lg"></i> حذف الجميع
+                </button>
+            </div>
         </div>
     </div>
 
@@ -741,13 +746,30 @@
             try { localStorage.setItem(ALERTS_SEEN_KEY, JSON.stringify([...keys])); } catch(e){}
         }
 
-        // تحديث الشارة — تظهر فقط إن وُجد تنبيه لم يُطّلع عليه بعد
+        // مفاتيح مُستبعَدة يدويًا («حذف») — لا تظهر ولا تُضيء الشارة حتى تعود كتنبيه جديد
+        const ALERTS_DISMISSED_KEY = 'rb_alerts_dismissed';
+        function getDismissed() {
+            try { return new Set(JSON.parse(localStorage.getItem(ALERTS_DISMISSED_KEY) || '[]')); } catch(e){ return new Set(); }
+        }
+        function saveDismissed(set) {
+            // احتفظ فقط بمفاتيح ما زالت ضمن البيانات الحالية (منع التضخّم)
+            const current = new Set(computeAlerts().map(a => a.key));
+            const pruned = [...set].filter(k => current.has(k));
+            try { localStorage.setItem(ALERTS_DISMISSED_KEY, JSON.stringify(pruned)); } catch(e){}
+        }
+        // التنبيهات النشطة = المحسوبة ناقص المُستبعَدة
+        function activeAlerts() {
+            const d = getDismissed();
+            return computeAlerts().filter(a => !d.has(a.key));
+        }
+
+        // تحديث الشارة — تظهر فقط إن وُجد تنبيه نشط لم يُطّلع عليه بعد
         function checkNotifications() {
             const badge = document.querySelector('.notify-badge');
             if (!badge) return;
-            __alerts = computeAlerts();
+            const active = activeAlerts();
             const seen = getSeenAlerts();
-            const unseen = __alerts.filter(a => !seen.has(a.key));
+            const unseen = active.filter(a => !seen.has(a.key));
             if (unseen.length > 0) {
                 badge.classList.add('active');
                 badge.title = unseen.length + ' تنبيه جديد';
@@ -757,27 +779,55 @@
             }
         }
 
-        // فتح مركز التنبيهات — يعرض القائمة ويعتبرها «مُطّلعًا عليها» فتنطفئ الشارة
-        function openNotifications() {
-            __alerts = computeAlerts();
+        // رسم قائمة التنبيهات داخل المركز
+        function renderNotifList() {
+            __alerts = activeAlerts();
             const list = document.getElementById('notifList');
+            const footer = document.getElementById('notifFooter');
             if (__alerts.length === 0) {
                 list.innerHTML = '<div class="text-center py-8" style="color:#8E2E3A;opacity:.6"><i class="ph ph-check-circle text-4xl"></i><p class="mt-2 text-sm font-medium">لا توجد تنبيهات حالياً — كل شيء تحت السيطرة</p></div>';
+                if (footer) footer.style.display = 'none';
             } else {
                 list.innerHTML = __alerts.map(a =>
-                    '<button onclick="gotoAlert(\'' + a.tab + '\')" class="w-full flex items-center gap-3 p-3 rounded-lg text-right transition-colors" style="background:#F5F0EB;color:#5a1c25" onmouseover="this.style.background=\'#efe6dc\'" onmouseout="this.style.background=\'#F5F0EB\'">' +
-                        '<span class="w-9 h-9 rounded-lg flex items-center justify-center text-white shrink-0" style="background:linear-gradient(135deg,#8E2E3A,#EA7A2C)"><i class="ph ' + a.icon + '"></i></span>' +
-                        '<span class="text-sm font-medium flex-1">' + a.text + '</span>' +
-                        '<i class="ph ph-caret-left" style="opacity:.4"></i>' +
-                    '</button>'
+                    '<div class="w-full flex items-center gap-2 p-2 rounded-lg" style="background:#F5F0EB;color:#5a1c25">' +
+                        '<button onclick="gotoAlert(\'' + a.tab + '\')" class="flex items-center gap-3 flex-1 text-right transition-colors rounded-lg p-1" onmouseover="this.style.opacity=\'.75\'" onmouseout="this.style.opacity=\'1\'">' +
+                            '<span class="w-9 h-9 rounded-lg flex items-center justify-center text-white shrink-0" style="background:linear-gradient(135deg,#8E2E3A,#EA7A2C)"><i class="ph ' + a.icon + '"></i></span>' +
+                            '<span class="text-sm font-medium flex-1">' + a.text + '</span>' +
+                        '</button>' +
+                        '<button onclick="dismissOne(\'' + encodeURIComponent(a.key) + '\')" title="حذف هذا التنبيه" class="p-1.5 rounded-lg shrink-0 transition-colors" style="color:#b91c1c" onmouseover="this.style.background=\'#fde8e8\'" onmouseout="this.style.background=\'transparent\'"><i class="ph ph-x"></i></button>' +
+                    '</div>'
                 ).join('');
+                if (footer) footer.style.display = 'block';
             }
-            saveSeenAlerts(new Set(__alerts.map(a => a.key)));
+        }
+
+        // فتح مركز التنبيهات — يعرض القائمة ويعتبرها «مُطّلعًا عليها» فتنطفئ الشارة
+        function openNotifications() {
+            renderNotifList();
+            saveSeenAlerts(new Set(activeAlerts().map(a => a.key)));
             checkNotifications();
             const modal = document.getElementById('notifModal');
             const content = document.getElementById('notifModalContent');
             modal.classList.remove('hidden');
             setTimeout(() => content.classList.remove('scale-95','opacity-0'), 10);
+        }
+
+        // حذف الجميع — يستبعد كل التنبيهات الحالية فتختفي من القائمة وتنطفئ الشارة
+        function dismissAllNotifications() {
+            const d = getDismissed();
+            activeAlerts().forEach(a => d.add(a.key));
+            saveDismissed(d);
+            renderNotifList();
+            checkNotifications();
+        }
+        // حذف تنبيه واحد
+        function dismissOne(k) {
+            k = decodeURIComponent(k);
+            const d = getDismissed();
+            d.add(k);
+            saveDismissed(d);
+            renderNotifList();
+            checkNotifications();
         }
         function closeNotifications() {
             const modal = document.getElementById('notifModal');
