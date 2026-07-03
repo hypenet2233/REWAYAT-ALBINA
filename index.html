@@ -496,7 +496,7 @@
                     <i class="ph ph-cloud-arrow-up text-xl"></i>
                 </button>
                 <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="restoreAll(this)">
-                <button onclick="showMessage('لا توجد تنبيهات جديدة حالياً')" class="relative p-2.5 rounded-full transition-all" style="background: #F5F0EB; color: #8E2E3A;">
+                <button onclick="openNotifications()" title="مركز التنبيهات" class="relative p-2.5 rounded-full transition-all" style="background: #F5F0EB; color: #8E2E3A;">
                     <i class="ph ph-bell text-xl"></i>
                     <span class="notify-badge"></span>
                 </button>
@@ -646,6 +646,17 @@
         </div>
     </div>
 
+    <!-- Modal مركز التنبيهات -->
+    <div id="notifModal" class="modal-overlay fixed inset-0 z-[65] hidden flex items-center justify-center">
+        <div class="modal-box rounded-xl w-full max-w-md mx-4 transform scale-95 opacity-0 transition-all duration-300 overflow-hidden" id="notifModalContent">
+            <div class="flex items-center justify-between px-5 py-4" style="background:linear-gradient(135deg,#8E2E3A,#EA7A2C); color:#fff;">
+                <div class="flex items-center gap-2 font-bold"><i class="ph ph-bell text-xl"></i> مركز التنبيهات</div>
+                <button onclick="closeNotifications()" class="p-1 rounded-full hover:bg-white/20 transition-colors" aria-label="إغلاق"><i class="ph ph-x text-lg"></i></button>
+            </div>
+            <div id="notifList" class="p-3 max-h-80 overflow-y-auto space-y-2"></div>
+        </div>
+    </div>
+
     <!-- Modal تأكيد الحذف -->
     <div id="confirmModal" class="modal-overlay fixed inset-0 z-[70] hidden flex items-center justify-center">
         <div class="rounded-xl p-6 max-w-sm w-full mx-4 transform scale-95 opacity-0 transition-all duration-300 bg-white" style="border-top: 5px solid #ef4444; box-shadow: 0 25px 60px rgba(239,68,68,0.2);" id="confirmModalContent">
@@ -704,36 +715,80 @@
             if (sb.classList.contains('hidden')) openSidebar(); else closeSidebar();
         });
 
-        // دالة التحقق من وجود تنبيهات حقيقية
-        function checkNotifications() {
-            const badge = document.querySelector('.notify-badge');
-            if (!badge) return;
+        // ====== مركز التنبيهات: الشارة تُضاء فقط عند وجود تنبيه جديد لم يُطّلع عليه ======
+        const ALERTS_SEEN_KEY = 'rb_alerts_seen';
+        let __alerts = [];
 
-            // عدد العناصر التي تحتاج اهتمام (مشاريع متوقفة، بلاغات مفتوحة، مخزون منخفض، إلخ)
+        // يحسب التنبيهات الفعلية من بيانات الأقسام (عناصر تحتاج اهتمامًا)
+        function computeAlerts() {
             const C = moduleData('rb_contracting'), P = moduleData('rb_portables'),
                   W = moduleData('rb_warehouses'), It = moduleData('rb_it'),
                   H = moduleData('rb_hr'), Wk = moduleData('rb_workers');
+            const a = [];
+            C.filter(x => x.status === 'متوقف').forEach(x => a.push({ tab:'contracting', icon:'ph-buildings', text:'مشروع متوقف: ' + (x.name||'—') + (x.ref ? ' ('+x.ref+')' : ''), key:'C:'+(x.ref||x.name) }));
+            P.filter(x => x.stage === 'جديد').forEach(x => a.push({ tab:'portables', icon:'ph-house-line', text:'طلب برتبل جديد: ' + (x.type||'—') + (x.code ? ' ('+x.code+')' : ''), key:'P:'+(x.code||x.type) }));
+            W.filter(x => x.status === 'منخفض' || x.status === 'نفذ').forEach(x => a.push({ tab:'warehouses', icon:'ph-warehouse', text:'مخزون ' + x.status + ': ' + (x.item||'—') + (x.sku ? ' ('+x.sku+')' : ''), key:'W:'+(x.sku||x.item) }));
+            It.filter(x => x.status === 'مفتوح').forEach(x => a.push({ tab:'it', icon:'ph-desktop', text:'بلاغ تقني مفتوح: ' + (x.issue||'—') + (x.ticket ? ' ('+x.ticket+')' : ''), key:'I:'+(x.ticket||x.issue) }));
+            H.filter(x => x.status === 'إجازة').forEach(x => a.push({ tab:'hr', icon:'ph-users', text:'موظف في إجازة: ' + (x.name||'—'), key:'H:'+(x.id||x.name) }));
+            Wk.filter(x => x.status === 'متوقف').forEach(x => a.push({ tab:'workers', icon:'ph-hard-hat', text:'عامل متوقف: ' + (x.name||'—'), key:'Wk:'+(x.id||x.name) }));
+            return a;
+        }
 
-            let pending = 0;
-            // مقاولات: مشاريع متوقفة
-            pending += C.filter(x => x.status === 'متوقف').length;
-            // برتبلات: طلبات جديدة
-            pending += P.filter(x => x.stage === 'جديد').length;
-            // مخازن: أصناف منخفضة أو نفذت
-            pending += W.filter(x => x.status === 'منخفض' || x.status === 'نفذ').length;
-            // تقنية: بلاغات مفتوحة
-            pending += It.filter(x => x.status === 'مفتوح').length;
-            // موارد بشرية: إجازات
-            pending += H.filter(x => x.status === 'إجازة').length;
-            // عمال: متوقفين
-            pending += Wk.filter(x => x.status === 'متوقف').length;
+        function getSeenAlerts() {
+            try { return new Set(JSON.parse(localStorage.getItem(ALERTS_SEEN_KEY) || '[]')); } catch(e){ return new Set(); }
+        }
+        function saveSeenAlerts(keys) {
+            try { localStorage.setItem(ALERTS_SEEN_KEY, JSON.stringify([...keys])); } catch(e){}
+        }
 
-            if (pending > 0) {
+        // تحديث الشارة — تظهر فقط إن وُجد تنبيه لم يُطّلع عليه بعد
+        function checkNotifications() {
+            const badge = document.querySelector('.notify-badge');
+            if (!badge) return;
+            __alerts = computeAlerts();
+            const seen = getSeenAlerts();
+            const unseen = __alerts.filter(a => !seen.has(a.key));
+            if (unseen.length > 0) {
                 badge.classList.add('active');
-                badge.title = pending + ' تنبيهات تنتبظر الاهتمام';
+                badge.title = unseen.length + ' تنبيه جديد';
             } else {
                 badge.classList.remove('active');
+                badge.title = 'لا توجد تنبيهات جديدة';
             }
+        }
+
+        // فتح مركز التنبيهات — يعرض القائمة ويعتبرها «مُطّلعًا عليها» فتنطفئ الشارة
+        function openNotifications() {
+            __alerts = computeAlerts();
+            const list = document.getElementById('notifList');
+            if (__alerts.length === 0) {
+                list.innerHTML = '<div class="text-center py-8" style="color:#8E2E3A;opacity:.6"><i class="ph ph-check-circle text-4xl"></i><p class="mt-2 text-sm font-medium">لا توجد تنبيهات حالياً — كل شيء تحت السيطرة</p></div>';
+            } else {
+                list.innerHTML = __alerts.map(a =>
+                    '<button onclick="gotoAlert(\'' + a.tab + '\')" class="w-full flex items-center gap-3 p-3 rounded-lg text-right transition-colors" style="background:#F5F0EB;color:#5a1c25" onmouseover="this.style.background=\'#efe6dc\'" onmouseout="this.style.background=\'#F5F0EB\'">' +
+                        '<span class="w-9 h-9 rounded-lg flex items-center justify-center text-white shrink-0" style="background:linear-gradient(135deg,#8E2E3A,#EA7A2C)"><i class="ph ' + a.icon + '"></i></span>' +
+                        '<span class="text-sm font-medium flex-1">' + a.text + '</span>' +
+                        '<i class="ph ph-caret-left" style="opacity:.4"></i>' +
+                    '</button>'
+                ).join('');
+            }
+            saveSeenAlerts(new Set(__alerts.map(a => a.key)));
+            checkNotifications();
+            const modal = document.getElementById('notifModal');
+            const content = document.getElementById('notifModalContent');
+            modal.classList.remove('hidden');
+            setTimeout(() => content.classList.remove('scale-95','opacity-0'), 10);
+        }
+        function closeNotifications() {
+            const modal = document.getElementById('notifModal');
+            const content = document.getElementById('notifModalContent');
+            content.classList.add('scale-95','opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+        function gotoAlert(tab) {
+            closeNotifications();
+            const btn = [...document.querySelectorAll('.nav-btn')].find(b => (b.getAttribute('onclick')||'').includes("'"+tab+"'"));
+            if (btn) switchTab(tab, btn);
         }
 
         // Modals
