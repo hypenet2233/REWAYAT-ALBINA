@@ -417,7 +417,7 @@
             <h1 class="text-xl font-bold tracking-wide text-white" style="text-shadow: 0 2px 4px rgba(0,0,0,0.3);">إدارة الشؤون الداخلية</h1>
         </div>
         
-        <div class="p-3 flex-1 overflow-y-auto">
+        <div class="p-3 flex-1 min-h-0 overflow-y-auto">
             <nav class="space-y-1">
                 <button onclick="switchTab('control', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-white/75 hover:text-white hover:bg-white/10 rounded-lg transition-all font-medium">
                     <i class="ph ph-gauge text-xl"></i> مركز القيادة الشامل
@@ -684,14 +684,24 @@
             btnElement.classList.remove('text-white/75');
 
             if (window.innerWidth < 768) {
-                document.getElementById('sidebar').classList.add('hidden');
+                closeSidebar();
             }
         }
 
+        // فتح/إغلاق القائمة على الجوال بنمط flex متّسق (رأس مثبّت + قائمة قابلة للتمرير + بطاقة مثبّتة)
+        function openSidebar(){
+            const sb = document.getElementById('sidebar');
+            sb.classList.remove('hidden');
+            sb.classList.add('flex', 'w-full');
+        }
+        function closeSidebar(){
+            const sb = document.getElementById('sidebar');
+            sb.classList.add('hidden');
+            sb.classList.remove('flex', 'w-full');
+        }
         document.getElementById('mobileMenuBtn').addEventListener('click', () => {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('hidden');
-            sidebar.classList.toggle('w-full');
+            const sb = document.getElementById('sidebar');
+            if (sb.classList.contains('hidden')) openSidebar(); else closeSidebar();
         });
 
         // دالة التحقق من وجود تنبيهات حقيقية
