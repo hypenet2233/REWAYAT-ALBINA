@@ -659,15 +659,25 @@ async function generatePDF() {
     });
 
     const imgData = canvas.toDataURL('image/png');
-    // A4 landscape: 297mm × 210mm
-    const pdfW = 297, pdfH = 210;
     const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-    const imgW = canvas.width, imgH = canvas.height;
-    const ratio = Math.min(pdfW / imgW, pdfH / imgH);
-    const drawW = imgW * ratio, drawH = imgH * ratio;
-    const offsetX = (pdfW - drawW) / 2, offsetY = (pdfH - drawH) / 2;
-
-    pdf.addImage(imgData, 'PNG', offsetX, offsetY, drawW, drawH);
+    const pdfW = pdf.internal.pageSize.getWidth();   // 297mm
+    const pdfH = pdf.internal.pageSize.getHeight();  // 210mm
+    const M = 3;                                     // هامش صغير للطباعة
+    const drawW = pdfW - M * 2;                      // ملء عرض الصفحة بالكامل
+    const drawH = drawW * (canvas.height / canvas.width);
+    const pageH = pdfH - M * 2;
+    if (drawH <= pageH) {
+      // يكفي صفحة واحدة تملأ العرض
+      pdf.addImage(imgData, 'PNG', M, M, drawW, drawH);
+    } else {
+      // المحتوى أطول من صفحة → تقسيم رأسي مع ملء العرض في كل صفحة أفقية
+      let y = 0;
+      while (y < drawH - 1) {
+        if (y > 0) pdf.addPage();
+        pdf.addImage(imgData, 'PNG', M, M - y, drawW, drawH);
+        y += pageH;
+      }
+    }
     const today = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
     pdf.save(`تقرير_الموقع_${today}.pdf`);
   } catch (err) {
